@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domain Setup | Studio Leish</title>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+            --text-muted: #8892b0;
+            --border: #2a2a4a;
+            --success: #00d9a5;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; padding: 20px; }
+
+        .container { max-width: 600px; margin: 0 auto; }
+
+        .header { text-align: center; margin-bottom: 40px; }
+
+        .logo {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--text), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: var(--secondary); border: 1px solid var(--border);
+            border-radius: 16px; padding: 30px; margin-bottom: 20px;
+        }
+
+        h2 { font-size: 1.5rem; margin-bottom: 20px; }
+        h3 { font-size: 1.2rem; margin-bottom: 15px; margin-top: 25px; }
+
+        .status { padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
+        .status.success { background: rgba(0, 217, 165, 0.2); color: var(--success); border: 1px solid rgba(0, 217, 165, 0.3); }
+        .status.error { background: rgba(233, 69, 96, 0.2); color: var(--accent); border: 1px solid rgba(233, 69, 96, 0.3); }
+        .status.info { background: rgba(244, 208, 63, 0.2); color: #f4d03f; border: 1px solid rgba(244, 208, 63, 0.3); }
+
+        .dns-record {
+            background: var(--primary); border: 1px solid var(--border);
+            border-radius: 8px; padding: 16px; margin-bottom: 10px;
+            font-family: monospace; font-size: 13px; overflow-x: auto;
+        }
+
+        .btn {
+            padding: 12px 24px; background: var(--accent); color: white;
+            border: none; border-radius: 8px; font-size: 1rem;
+            font-weight: 600; cursor: pointer; transition: opacity 0.3s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn.secondary { background: var(--secondary); border: 1px solid var(--border); }
+
+        .step { margin-bottom: 30px; }
+        .step-number {
+            display: inline-block; width: 30px; height: 30px;
+            background: var(--accent); color: white; border-radius: 50%;
+            text-align: center; line-height: 30px; margin-right: 10px;
+            font-weight: 700;
+        }
+
+        .note { color: var(--text-muted); font-size: 13px; margin-top: 10px; line-height: 1.5; }
+
+        input {
+            width: 100%; padding: 12px 16px; background: var(--primary);
+            border: 2px solid var(--border); border-radius: 8px;
+            color: var(--text); font-size: 1rem; margin-bottom: 15px;
+        }
+        input:focus { outline: none; border-color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Studio Leish</div>
+            <p style="color: var(--text-muted);">Domain Setup Guide</p>
+        </div>
+
+        <div class="card">
+            <h2>Domain: studio@leish.my</h2>
+
+            <div class="step">
+                <h3><span class="step-number">1</span> Cloudflare Setup</h3>
+                <p style="color: var(--text-muted); margin-bottom: 15px;">
+                    If you haven't already, add <strong>leish.my</strong> to Cloudflare:
+                </p>
+                <div class="dns-record">https://dash.cloudflare.com → Add a Site → leish.my</div>
+                <p class="note">
+                    After adding, Cloudflare will provide nameservers like:<br>
+                    - merlin.ns.cloudflare.com<br>
+                    - vivienne.ns.cloudflare.com<br>
+                    Update these at your domain registrar (MYNIC, Exabytes, etc.)
+                </p>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">2</span> DNS Configuration</h3>
+                <p style="color: var(--text-muted); margin-bottom: 15px;">
+                    Add CNAME record for <strong>studio</strong> subdomain:
+                </p>
+                <div class="dns-record">
+                    Type: CNAME<br>
+                    Name: studio<br>
+                    Content: cname.vercel-dns.com<br>
+                    Proxy: Enabled (orange cloud)<br>
+                    TTL: Auto
+                </div>
+                <p class="note">
+                    Do this in Cloudflare dashboard → DNS → Records → Add Record
+                </p>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">3</span> Vercel Domain</h3>
+                <p style="color: var(--text-muted); margin-bottom: 15px;">
+                    Add domain in Vercel dashboard:
+                </p>
+                <div class="dns-record">
+                    vercel domains add studio.leish.my
+                </div>
+                <p class="note">
+                    Or go to: https://vercel.com/shamelalis-projects/studio-leish-static/settings/domains<br>
+                    Click "Add Domain" and enter: studio.leish.my
+                </p>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">4</span> SSL/TLS Configuration</h3>
+                <p style="color: var(--text-muted); margin-bottom: 15px;">
+                    Set encryption mode in Cloudflare:
+                </p>
+                <div class="dns-record">
+                    Cloudflare → SSL/TLS → Overview<br>
+                    Set to: Full (strict)
+                </div>
+                <p class="note">
+                    Also enable: Always Use HTTPS, HTTP Strict Transport Security (HSTS)
+                </p>
+            </div>
+
+            <div class="status info">
+                <strong>⏳ DNS Propagation Time:</strong><br>
+                After setting up DNS, wait 24-48 hours for full propagation.<br>
+                You can check status with: <code>dig studio.leish.my</code>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Verification</h2>
+
+            <div class="step">
+                <h3>Test URLs (after propagation):</h3>
+                <div class="dns-record">
+                    Homepage: https://studio.leish.my<br>
+                    Booking: https://studio.leish.my/book.html<br>
+                    Admin: https://studio.leish.my/admin.html<br>
+                    User: https://studio.leish.my/user.html
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Update Application URLs:</h3>
+                <p style="color: var(--text-muted); margin-bottom: 15px;">
+                    After domain is live, update these in your code:
+                </p>
+                <div class="dns-record">
+                    In book.html:<br>
+                    - from: 'Studio Leish &lt;bookings@leish.my&gt;'<br>
+                    - callback_url: 'https://studio.leish.my/api/billplz-callback'
+                </div>
+                <div class="dns-record" style="margin-top: 10px;">
+                    In admin.html & user.html:<br>
+                    - Update redirect URLs to: 'https://studio.leish.my/...'
+                </div>
+            </div>
+
+            <a href="https://studio-leish-static.vercel.app" class="btn secondary" style="text-decoration: none; display: inline-block; margin-right: 10px;">
+                ← Back to Site
+            </a>
+            <a href="https://dash.cloudflare.com" class="btn" style="text-decoration: none; display: inline-block;">
+                Cloudflare Dashboard →
+            </a>
+        </div>
+
+        <div class="note" style="text-align: center; margin-top: 30px;">
+            Studio Leish | studio.leish.my | Powered by Vercel + Cloudflare
+        </div>
+    </div>
+</body>
+</html>

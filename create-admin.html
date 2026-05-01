@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Admin | Studio Leish</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+            --accent: #e94560;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { max-width: 400px; padding: 20px; width: 100%; }
+        .form-box { background: #16213e; border: 1px solid #2a2a4a; border-radius: 16px; padding: 40px; }
+        h2 { text-align: center; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #8892b0; font-size: 14px; }
+        input, select {
+            width: 100%; padding: 12px 16px; background: var(--primary);
+            border: 2px solid #2a2a4a; border-radius: 8px;
+            color: var(--text); font-size: 1rem;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--accent); }
+        .btn {
+            width: 100%; padding: 14px; background: var(--accent); color: white;
+            border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: opacity 0.3s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .message { margin-top: 15px; padding: 12px; border-radius: 8px; font-size: 14px; text-align: center; }
+        .success { background: rgba(0, 217, 165, 0.2); color: #00d9a5; }
+        .error { background: rgba(233, 69, 96, 0.2); color: var(--accent); }
+        .info { background: rgba(244, 208, 63, 0.2); color: #f4d03f; }
+        .note { color: #8892b0; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-box">
+            <h2>Create Admin Account</h2>
+            
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" value="admin@leish.my" placeholder="admin@leish.my">
+                <div class="note">Use this email for admin login</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" value="LeishAdmin2024!" placeholder="Minimum 6 characters">
+                <div class="note">Must be at least 6 characters</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="name" value="Admin Leish" placeholder="Your name">
+            </div>
+            
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" id="phone" value="+60123456789" placeholder="+60 12-345 6789">
+            </div>
+            
+            <button class="btn" onclick="createAdmin()">Create Admin Account</button>
+            
+            <div id="message"></div>
+            
+            <div class="info message" style="margin-top: 20px;">
+                <strong>After creating:</strong><br>
+                1. Go to <a href="admin.html" style="color: var(--accent);">admin.html</a><br>
+                2. Login with admin@leish.my / LeishAdmin2024!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://vnpiekiedynvechawhhw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucGlla2llZHludmVjaGF3aGh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjQ2MzUsImV4cCI6MjA5MDY0MDYzNX0.TsnM45hNEg8m2J0PdMUG43l-jnYbQ7VoyHUqdzdfJyY';
+        const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+        
+        async function createAdmin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const msgDiv = document.getElementById('message');
+            
+            msgDiv.className = '';
+            msgDiv.textContent = 'Creating admin account...';
+            
+            if (!email || !password || !name) {
+                msgDiv.className = 'message error';
+                msgDiv.textContent = 'Please fill in all required fields';
+                return;
+            }
+            
+            try {
+                // Sign up the admin user
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            name: name,
+                            phone: phone,
+                            role: 'admin'
+                        }
+                    }
+                });
+                
+                if (error) {
+                    msgDiv.className = 'message error';
+                    msgDiv.textContent = 'Error: ' + error.message;
+                    return;
+                }
+                
+                msgDiv.className = 'message success';
+                msgDiv.innerHTML = `✅ Admin account created successfully!<br><br>` +
+                    `Email: ${email}<br>` +
+                    `Password: ${password}<br><br>` +
+                    `Please check your email to verify, or go to Supabase dashboard to auto-confirm.`;
+                
+                console.log('Admin created:', data);
+                
+            } catch(e) {
+                msgDiv.className = 'message error';
+                msgDiv.textContent = 'Error: ' + e.message;
+            }
+        }
+    </script>
+</body>
+</html>

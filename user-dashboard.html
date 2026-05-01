@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings | Studio Leish</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+            --text-muted: #8892b0;
+            --border: #2a2a4a;
+            --success: #00d9a5;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 30px;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
+
+        .logout-btn { padding: 8px 16px; background: var(--secondary); color: var(--text); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+
+        .welcome { margin-bottom: 30px; }
+        .welcome h2 { font-size: 1.8rem; margin-bottom: 5px; }
+        .welcome p { color: var(--text-muted); font-size: 14px; }
+
+        .bookings-list { display: grid; gap: 20px; }
+        .booking-card {
+            background: var(--secondary); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; display: grid;
+            grid-template-columns: 1fr auto; gap: 10px;
+        }
+        .booking-info h3 { font-size: 1.1rem; margin-bottom: 5px; }
+        .booking-info p { color: var(--text-muted); font-size: 14px; margin-bottom: 5px; }
+        .booking-status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .status-pending { background: rgba(244, 208, 63, 0.2); color: var(--gold); }
+        .status-confirmed { background: rgba(0, 217, 165, 0.2); color: var(--success); }
+        .status-cancelled { background: rgba(233, 69, 96, 0.2); color: var(--accent); }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 20px; }
+        .empty-state p { margin-bottom: 20px; }
+
+        .btn {
+            padding: 10px 20px; background: var(--accent); color: white;
+            border: none; border-radius: 6px; cursor: pointer; font-size: 14px;
+        }
+
+        .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo" onclick="window.location.href='index.html'">Studio Leish</div>
+            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+
+        <div class="welcome">
+            <h2 id="user-name">Welcome back!</h2>
+            <p>Here are your upcoming bookings</p>
+        </div>
+
+        <div class="loading" id="loading">Loading your bookings...</div>
+
+        <div class="bookings-list" id="bookings-list" style="display: none;"></div>
+
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <i class="fas fa-calendar-times"></i>
+            <p>You don't have any bookings yet.</p>
+            <button class="btn" onclick="window.location.href='book.html'">Book a Session</button>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://vnpiekiedynvechawhhw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucGlla2llZHludmVjaGF3aGh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjQ2MzUsImV4cCI6MjA5MDY0MDYzNX0.TsnM45hNEg8m2J0PdMUG43l-jnYbQ7VoyHUqdzdfJyY';
+        const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+
+        (async function() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'user.html';
+                return;
+            }
+
+            // Get user details
+            const { data: userData } = await supabase
+                .from('users')
+                .select('name')
+                .eq('id', session.user.id)
+                .single();
+
+            if (userData) {
+                document.getElementById('user-name').textContent = `Welcome back, ${userData.name}!`;
+            }
+
+            loadBookings(session.user.email);
+        })();
+
+        async function loadBookings(userEmail) {
+            const { data, error } = await supabase
+                .from('bookings')
+                .select('*')
+                .eq('clientEmail', userEmail)
+                .order('date', { ascending: true });
+
+            document.getElementById('loading').style.display = 'none';
+
+            if (error) {
+                console.error('Error loading bookings:', error);
+                return;
+            }
+
+            if (data.length === 0) {
+                document.getElementById('empty-state').style.display = 'block';
+                return;
+            }
+
+            const list = document.getElementById('bookings-list');
+            list.style.display = 'grid';
+
+            data.forEach(booking => {
+                const card = document.createElement('div');
+                card.className = 'booking-card';
+                card.innerHTML = `
+                    <div class="booking-info">
+                        <h3>${booking.room || 'Booking'}</h3>
+                        <p><i class="far fa-calendar"></i> ${booking.date || 'N/A'} at ${booking.time || 'N/A'}</p>
+                        <p><i class="far fa-clock"></i> ${booking.sessionType || 'N/A'}</p>
+                        <p><strong>MYR ${booking.totalAmount || 0}</strong></p>
+                    </div>
+                    <div>
+                        <span class="booking-status status-${booking.status || 'pending'}">${booking.status || 'pending'}</span>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'user.html';
+        }
+    </script>
+</body>
+</html>

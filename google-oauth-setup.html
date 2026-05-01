@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth Setup | Studio Leish</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+            --text-muted: #8892b0;
+            --border: #2a2a4a;
+            --success: #00d9a5;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; padding: 20px; }
+
+        .container { max-width: 800px; margin: 0 auto; }
+
+        .header { text-align: center; margin-bottom: 40px; }
+
+        .logo {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--text), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: var(--secondary); border: 1px solid var(--border);
+            border-radius: 16px; padding: 30px; margin-bottom: 20px;
+        }
+
+        h2 { font-size: 1.5rem; margin-bottom: 20px; }
+        h3 { font-size: 1.2rem; margin-bottom: 15px; color: var(--accent); }
+
+        .step { margin-bottom: 30px; padding-left: 20px; border-left: 3px solid var(--accent); }
+        .step h4 { font-size: 1rem; margin-bottom: 8px; }
+        .step p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+        .code-block {
+            background: var(--primary); border: 1px solid var(--border);
+            border-radius: 8px; padding: 16px; margin: 12px 0;
+            font-family: monospace; font-size: 13px; overflow-x: auto;
+        }
+
+        .note {
+            background: rgba(244, 208, 63, 0.1); border: 1px solid rgba(244, 208, 63, 0.3);
+            border-radius: 8px; padding: 12px 16px; margin: 12px 0;
+            font-size: 14px; color: #f4d03f;
+        }
+
+        .success {
+            background: rgba(0, 217, 165, 0.1); border: 1px solid rgba(0, 217, 165, 0.3);
+            border-radius: 8px; padding: 16px; margin: 12px 0;
+            font-size: 14px; color: var(--success);
+        }
+
+        .btn {
+            padding: 12px 24px; background: var(--accent); color: white;
+            border: none; border-radius: 8px; font-size: 1rem;
+            font-weight: 600; cursor: pointer; transition: all 0.3s;
+        }
+        .btn:hover { opacity: 0.9; }
+
+        .url-list { list-style: none; padding: 0; margin: 12px 0; }
+        .url-list li {
+            background: var(--primary); border: 1px solid var(--border);
+            border-radius: 6px; padding: 10px 14px; margin-bottom: 8px;
+            font-family: monospace; font-size: 13px; word-break: break-all;
+        }
+
+        .warning {
+            background: rgba(233, 69, 96, 0.1); border: 1px solid rgba(233, 69, 96, 0.3);
+            border-radius: 8px; padding: 12px 16px; margin: 12px 0;
+            font-size: 14px; color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Studio Leish</div>
+            <p style="color: var(--text-muted);">Google OAuth Setup Guide</p>
+        </div>
+
+        <div class="card">
+            <h2>Step 1: Google Cloud Console</h2>
+            <div class="step">
+                <h4>1.1 Create Project</h4>
+                <p>Go to <a href="https://console.cloud.google.com" style="color: var(--accent);">Google Cloud Console</a></p>
+                <p>Create a new project or select existing one.</p>
+            </div>
+            <div class="step">
+                <h4>1.2 Enable APIs</h4>
+                <p>Navigate to <strong>APIs & Services</strong> → <strong>Library</strong></p>
+                <p>Search for <strong>Google+ API</strong> and enable it.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Step 2: OAuth Consent Screen</h2>
+            <div class="step">
+                <h4>2.1 Configure Consent Screen</h4>
+                <p>Go to <strong>OAuth Consent Screen</strong> in Google Cloud Console</p>
+                <p>Select <strong>External</strong> user type</p>
+                <p>Fill in required fields:</p>
+                <div class="code-block">
+                    App name: Studio Leish<br>
+                    User support email: admin@leish.my<br>
+                    Developer contact: admin@leish.my
+                </div>
+            </div>
+            <div class="step">
+                <h4>2.2 Add Scopes</h4>
+                <p>Add scopes:</p>
+                <div class="code-block">
+                    .../auth/userinfo.email<br>
+                    .../auth/userinfo.profile<br>
+                    openid
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Step 3: Create OAuth Credentials</h2>
+            <div class="step">
+                <h4>3.1 Create Client ID</h4>
+                <p>Go to <strong>Credentials</strong> → <strong>Create Credentials</strong> → <strong>OAuth Client ID</strong></p>
+                <p>Select application type: <strong>Web Application</strong></p>
+            </div>
+            <div class="step">
+                <h4>3.2 Configure Redirect URIs</h4>
+                <p style="margin-bottom: 12px;"><strong>Authorized Redirect URIs:</strong></p>
+                <ul class="url-list">
+                    <li>https://studio-leish-static.vercel.app/auth/callback</li>
+                    <li>https://studios.leish.my/auth/callback (after domain setup)</li>
+                    <li>http://localhost:3000/auth/callback (for local dev)</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h4>3.3 Copy Credentials</h4>
+                <p>After creation, copy:</p>
+                <div class="code-block">
+                    Client ID: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com<br>
+                    Client Secret: YOUR_GOOGLE_CLIENT_SECRET
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Step 4: Configure Supabase Auth</h2>
+            <div class="step">
+                <h4>4.1 Add Provider in Supabase</h4>
+                <p>Go to <a href="https://app.supabase.com/project/vnpiekiedynvechawhhw/auth/providers" style="color: var(--accent);">Supabase Dashboard</a></p>
+                <p>Navigate to <strong>Authentication</strong> → <strong>Providers</strong> → <strong>Google</strong></p>
+                <p>Click <strong>Enable Google provider</strong></p>
+            </div>
+            <div class="step">
+                <h4>4.2 Enter Credentials</h4>
+                <p>Enter the credentials from Step 3.3:</p>
+                <div class="code-block">
+                    Client ID: [Your Google Client ID]<br>
+                    Client Secret: [Your Google Client Secret]<br>
+                    Redirect URL: https://vnpiekiedynvechawhhw.supabase.co/auth/v1/callback
+                </div>
+                <div class="note">
+                    <strong>Important:</strong> The Redirect URL in Supabase should auto-populate. Copy it and add to Google Cloud Console in Step 3.2!
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Step 5: Update Application</h2>
+            <div class="step">
+                <h4>5.1 Add Environment Variables</h4>
+                <p>Add to Vercel environment variables:</p>
+                <div class="code-block">
+                    VERCEL env add NEXT_PUBLIC_GOOGLE_CLIENT_ID<br>
+                    VERCEL env add GOOGLE_CLIENT_SECRET
+                </div>
+                <p>Values:</p>
+                <div class="code-block">
+                    NEXT_PUBLIC_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID<br>
+                    GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
+                </div>
+            </div>
+            <div class="step">
+                <h4>5.2 Update user.html</h4>
+                <p>Add Google Sign-In button to <code>user.html</code>:</p>
+                <div class="code-block">
+                    &lt;button onclick="signInWithGoogle()"&gt;<br>
+                    &nbsp;&nbsp;&lt;i class="fab fa-google"&gt;&lt;/i&gt; Sign in with Google<br>
+                    &lt;/button&gt;
+                </div>
+                <p>Add JavaScript function:</p>
+                <div class="code-block">
+                    async function signInWithGoogle() {<br>
+                    &nbsp;&nbsp;const { data, error } = await supabase.auth.signInWithOAuth();<br>
+                    &nbsp;&nbsp;if (error) console.error('Google OAuth error:', error);<br>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Step 6: Test Google OAuth</h2>
+            <div class="step">
+                <h4>6.1 Test Flow</h4>
+                <p>Visit <code>user.html</code> and click "Sign in with Google"</p>
+                <p>Should redirect to Google login → back to app</p>
+            </div>
+            <div class="success">
+                <strong>✅ Success!</strong> Google OAuth is now integrated with Studio Leish!
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Important Notes:</strong><br>
+            1. Google OAuth requires HTTPS in production (already handled by Vercel + Cloudflare)<br>
+            2. Make sure to add ALL redirect URIs to Google Cloud Console<br>
+            3. Test with real Google account (not just test accounts)<br>
+            4. Verify email verification is enabled in Supabase Auth settings
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="user.html" class="btn" style="text-decoration: none;">← Back to User Page</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Spaces | Studio Leish</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --accent-light: #ff6b6b;
+            --gold: #f4d03f;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+            --text-muted: #8892b0;
+            --success: #00d9a5;
+            --border: #2a2a4a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 40px;
+        }
+        .logo { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .logo-icon {
+            width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent), var(--gold));
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; animation: pulse-glow 3s ease-in-out infinite;
+        }
+        .logo h1 { font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--accent-light));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--text); }
+        .nav-links a.active { color: var(--accent); font-weight: 600; }
+
+        /* Gallery */
+        .page-header { text-align: center; margin-bottom: 50px; }
+        .page-header h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--text), var(--accent-light));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; }
+
+        .gallery-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px; margin-bottom: 50px;
+        }
+
+        .space-card {
+            background: var(--secondary); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden; transition: all 0.3s ease; cursor: pointer;
+        }
+        .space-card:hover { transform: translateY(-8px); border-color: var(--accent); box-shadow: 0 8px 30px rgba(233, 69, 96, 0.2); }
+
+        .card-image {
+            height: 250px; background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex; align-items: center; justify-content: center; font-size: 4rem;
+            position: relative; overflow: hidden;
+        }
+        .card-image::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(15, 15, 26, 0.8));
+        }
+        .card-badge {
+            position: absolute; top: 16px; right: 16px; z-index: 1;
+            background: var(--accent); color: white; padding: 6px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; text-transform: uppercase;
+        }
+        .card-content { padding: 24px; }
+        .card-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 8px; }
+        .card-description { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 16px; }
+
+        .card-details { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .detail-item { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85rem; }
+        .detail-item i { color: var(--accent); }
+
+        .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid var(--border); }
+        .price { font-size: 1.5rem; font-weight: 700; color: var(--gold); }
+        .price-period { font-size: 0.8rem; color: var(--text-muted); font-weight: 400; }
+        .book-btn {
+            padding: 10px 20px; background: var(--accent); color: white;
+            border: none; border-radius: 50px; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .book-btn:hover { background: var(--accent-light); transform: scale(1.05); }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 4rem; margin-bottom: 20px; display: block; }
+        .empty-state h3 { font-size: 1.5rem; margin-bottom: 10px; color: var(--text); }
+        .empty-state p { font-size: 1rem; }
+
+        /* Loading */
+        .loading { text-align: center; padding: 60px; color: var(--text-muted); }
+        .loading i { font-size: 2rem; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .gallery-grid { grid-template-columns: 1fr; }
+            .page-header h2 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo" onclick="window.location.href='index.html'">
+                <div class="logo-icon"><i class="fas fa-palette"></i></div>
+                <h1>Leish Studio</h1>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="gallery.html" class="active">Browse Spaces</a>
+                <a href="book.html">Book Now</a>
+                <a href="index.html" style="color: var(--text-muted);">Back to Home</a>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h2>Browse Our Spaces</h2>
+            <p>Discover the perfect studio for your creative vision</p>
+        </div>
+
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner"></i>
+            <p>Loading spaces...</p>
+        </div>
+
+        <div class="gallery-grid" id="gallery-grid" style="display: none;">
+            <!-- Cards will be dynamically inserted -->
+        </div>
+
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <i class="fas fa-search"></i>
+            <h3>No spaces found</h3>
+            <p>Check back later for available studios and spaces.</p>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://vnpiekiedynvechawhhw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucGlla2llZHludmVjaGF3aGh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjQ2MzUsImV4cCI6MjA5MDY0MDYzNX0.TsnM45hNEg8m2J0PdMUG43l-jnYbQ7VoyHUqdzdfJyY';
+        const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Space data (fallback if Supabase table doesn't exist yet)
+        const fallbackSpaces = [
+            {
+                id: 'creative-studio',
+                name: 'Creative Studio',
+                description: 'Perfect for photoshoots, content creation, and small events. Includes ring lights and backdrops.',
+                price: 150,
+                capacity: '1-5 people',
+                duration: '1-3 hours',
+                icon: '🎨',
+                features: ['Ring Lights', 'Backdrops', 'Makeup Station', 'Client Lounge']
+            },
+            {
+                id: 'makeup-suite',
+                name: 'Makeup Suite',
+                description: 'Professional makeup station with premium lighting, mirrors, and client seating area.',
+                price: 120,
+                capacity: '1-3 people',
+                duration: '1-2 hours',
+                icon: '💄',
+                features: ['Professional Lighting', 'Large Mirrors', 'Client Seating', 'Waiting Area']
+            },
+            {
+                id: 'bridal-suite',
+                name: 'Bridal Suite',
+                description: 'Luxury suite for bridal makeup with private changing area and photography corner.',
+                price: 250,
+                capacity: '1-2 people',
+                duration: '2-4 hours',
+                icon: '👑',
+                features: ['Private Changing Room', 'Photography Corner', 'Premium Lighting', 'Bridal Chair']
+            },
+            {
+                id: 'classroom',
+                name: 'Classroom',
+                description: 'Spacious area for makeup classes and workshops. Capacity up to 15 students.',
+                price: 100,
+                capacity: '10-15 people',
+                duration: '2-4 hours',
+                icon: '🎓',
+                features: ['Whiteboard', 'Projector', '15 Chairs', 'Practice Stations']
+            }
+        ];
+
+        async function loadSpaces() {
+            try {
+                // Try to load from Supabase (if table exists)
+                const { data, error } = await supabase
+                    .from('studios')
+                    .select('*')
+                    .eq('is_active', true);
+
+                let spaces = fallbackSpaces;
+
+                if (!error && data && data.length > 0) {
+                    spaces = data;
+                } else {
+                    console.log('Using fallback data (studios table may not exist yet)');
+                }
+
+                displaySpaces(spaces);
+
+            } catch (e) {
+                console.warn('Error loading spaces:', e.message);
+                displaySpaces(fallbackSpaces);
+            }
+        }
+
+        function displaySpaces(spaces) {
+            const grid = document.getElementById('gallery-grid');
+            const loading = document.getElementById('loading');
+            const empty = document.getElementById('empty-state');
+
+            loading.style.display = 'none';
+
+            if (spaces.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+
+            spaces.forEach(space => {
+                const card = document.createElement('div');
+                card.className = 'space-card';
+                card.onclick = () => window.location.href = `book.html?room=${space.id || space.name.toLowerCase().replace(/\s+/g, '-')}`;
+
+                const icon = space.icon || getIconForSpace(space.name);
+                const price = space.price_per_hour || space.price || 0;
+                const capacity = space.capacity || '1-5 people';
+                const duration = space.duration || '1-3 hours';
+
+                card.innerHTML = `
+                    <div class="card-image">
+                        <div class="card-badge">Available</div>
+                        <span style="position: relative; z-index: 1;">${icon}</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${space.name}</h3>
+                        <p class="card-description">${space.description}</p>
+                        <div class="card-details">
+                            <div class="detail-item">
+                                <i class="fas fa-users"></i>
+                                <span>${capacity}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>${duration}</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div>
+                                <div class="price">MYR ${price}<span class="price-period">/hr</span></div>
+                            </div>
+                            <button class="book-btn" onclick="event.stopPropagation(); window.location.href='book.html'">
+                                Book Now <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function getIconForSpace(name) {
+            const nameLower = name.toLowerCase();
+            if (nameLower.includes('creative')) return '🎨';
+            if (nameLower.includes('makeup')) return '💄';
+            if (nameLower.includes('bridal')) return '👑';
+            if (nameLower.includes('class')) return '🎓';
+            return '🎨';
+        }
+
+        // Load spaces on page load
+        loadSpaces();
+    </script>
+</body>
+</html>
