@@ -258,6 +258,23 @@
             color: var(--accent);
         }
 
+        .hours-input {
+            background: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            padding: 8px 12px;
+            width: 80px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .hours-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
         /* Date & Time */
         .datetime-section {
             display: grid;
@@ -355,7 +372,7 @@
         .checkbox {
             width: 24px;
             height: 24px;
-            border: 2px solid var(--border);
+            border: 2px solid white;
             border-radius: 6px;
             cursor: pointer;
             display: flex;
@@ -608,16 +625,9 @@
 
                 <div class="room-card" data-room="makeup-suite" onclick="selectRoom(this)">
                     <div class="room-icon"><i class="fas fa-magic"></i></div>
-                    <div class="room-name">Makeup Suite</div>
+                    <div class="room-name">Makeup Station</div>
                     <div class="room-details">Professional makeup station with premium lighting, mirrors, and client seating area.</div>
                     <div class="room-price">MYR 120/hr</div>
-                </div>
-
-                <div class="room-card" data-room="bridal-suite" onclick="selectRoom(this)">
-                    <div class="room-icon"><i class="fas fa-crown"></i></div>
-                    <div class="room-name">Bridal Suite</div>
-                    <div class="room-details">Luxury suite for bridal makeup with private changing area and photography corner.</div>
-                    <div class="room-price">MYR 250/hr</div>
                 </div>
 
                 <div class="room-card" data-room="classroom" onclick="selectRoom(this)">
@@ -650,18 +660,19 @@
                 <div>
                     <h3 style="margin-bottom: 16px;">Available Time Slots</h3>
                     <div class="time-slots">
-                        <div class="time-slot" onclick="selectTime(this)">9:00 AM</div>
+                        <div class="time-slot" onclick="selectTime(this)">12:00 AM</div>
+                        <div class="time-slot" onclick="selectTime(this)">2:00 AM</div>
+                        <div class="time-slot" onclick="selectTime(this)">4:00 AM</div>
+                        <div class="time-slot" onclick="selectTime(this)">6:00 AM</div>
+                        <div class="time-slot" onclick="selectTime(this)">8:00 AM</div>
                         <div class="time-slot" onclick="selectTime(this)">10:00 AM</div>
-                        <div class="time-slot" onclick="selectTime(this)">11:00 AM</div>
                         <div class="time-slot" onclick="selectTime(this)">12:00 PM</div>
-                        <div class="time-slot" onclick="selectTime(this)">1:00 PM</div>
                         <div class="time-slot" onclick="selectTime(this)">2:00 PM</div>
-                        <div class="time-slot" onclick="selectTime(this)">3:00 PM</div>
                         <div class="time-slot" onclick="selectTime(this)">4:00 PM</div>
-                        <div class="time-slot" onclick="selectTime(this)">5:00 PM</div>
                         <div class="time-slot" onclick="selectTime(this)">6:00 PM</div>
-                        <div class="time-slot" onclick="selectTime(this)">7:00 PM</div>
-                        <div class="time-slot unavailable">8:00 PM</div>
+                        <div class="time-slot" onclick="selectTime(this)">8:00 PM</div>
+                        <div class="time-slot" onclick="selectTime(this)">10:00 PM</div>
+                        <div class="time-slot" onclick="selectTime(this)">11:00 PM</div>
                     </div>
                 </div>
             </div>
@@ -700,6 +711,16 @@
                         <p>Exclusive use of the studio for special occasions</p>
                     </div>
                     <div class="session-duration">3 hrs</div>
+                </div>
+
+                <div class="session-card" data-session="special" onclick="selectSession(this)">
+                    <div class="session-info">
+                        <h3>Special Request</h3>
+                        <p>Custom duration - specify your required hours</p>
+                    </div>
+                    <div class="session-duration">
+                        <input type="number" id="special-hours" min="1" max="24" placeholder="Hours" class="hours-input" onclick="event.stopPropagation()">
+                    </div>
                 </div>
             </div>
 
@@ -947,9 +968,21 @@
         function selectSession(card) {
             document.querySelectorAll('.session-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
+            const sessionType = card.dataset.session;
+            let duration;
+            
+            if (sessionType === 'special') {
+                const hoursInput = document.getElementById('special-hours');
+                const hours = hoursInput.value || 1;
+                duration = `${hours} hr${hours > 1 ? 's' : ''}`;
+                hoursInput.value = hours;
+            } else {
+                duration = card.querySelector('.session-duration').textContent;
+            }
+            
             booking.session = {
-                type: card.dataset.session,
-                duration: card.querySelector('.session-duration').textContent
+                type: sessionType === 'special' ? `Special Request (${duration})` : sessionType,
+                duration: duration
             };
         }
 
@@ -983,6 +1016,67 @@
             dateInput.type = 'date';
             dateInput.min = new Date().toISOString().split('T')[0];
         }
+
+        // Read URL params and auto-fill
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                room: params.get('room'),
+                date: params.get('date'),
+                time: params.get('time')
+            };
+        }
+
+        function autoFillBooking() {
+            const params = getUrlParams();
+            if (!params.room && !params.date && !params.time) return;
+
+            // Auto-select room
+            if (params.room) {
+                setTimeout(() => {
+                    const roomCards = document.querySelectorAll('.room-card');
+                    roomCards.forEach(card => {
+                        if (card.querySelector('.room-name')?.textContent === params.room) {
+                            selectRoom(card);
+                            // Auto-advance to next step
+                            setTimeout(() => nextStep(), 500);
+                        }
+                    });
+                }, 1000); // Wait for rooms to load
+            }
+
+            // Auto-select date
+            if (params.date) {
+                setTimeout(() => {
+                    const dateInput = document.getElementById('booking-date');
+                    if (dateInput._flatpickr) {
+                        dateInput._flatpickr.setDate(params.date);
+                    } else {
+                        dateInput.value = params.date;
+                    }
+                    booking.date = params.date;
+                }, 500);
+            }
+
+            // Auto-select time
+            if (params.time) {
+                setTimeout(() => {
+                    const timeSlots = document.querySelectorAll('.time-slot');
+                    timeSlots.forEach(slot => {
+                        if (slot.textContent.trim() === params.time) {
+                            selectTime(slot);
+                            // Auto-advance to next step
+                            setTimeout(() => {
+                                if (currentStep === 2) nextStep();
+                            }, 500);
+                        }
+                    });
+                }, 1500); // Wait for time slots to load
+            }
+        }
+
+        // Run auto-fill after page loads
+        setTimeout(autoFillBooking, 2000);
 
         // Update summary
         function updateSummary() {
