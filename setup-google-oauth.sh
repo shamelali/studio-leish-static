@@ -42,7 +42,7 @@ echo ""
 echo "[2/3] Configuring Redirect URIs..."
 echo "Add these to Google Cloud Console → APIs & Services → Credentials:"
 echo "1. https://studio-leish-static.vercel.app/auth/callback"
-echo "2. https://studios.leish.my/auth/callback (after domain setup)"
+echo "2. https://studio.leish.my/auth/callback (after domain setup)"
 echo "3. https://vnpiekiedynvechawhhw.supabase.co/auth/v1/callback"
 echo ""
 

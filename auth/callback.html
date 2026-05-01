@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signing you in... | Studio Leish</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--surface);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--secondary);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        p { margin-top: 20px; color: var(--text); }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+    <p>Completing sign in...</p>
+
+    <script>
+        const supabaseUrl = 'https://vnpiekiedynvechawhhw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucGlla2llZHludmVjaGF3aGh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjQ2MzUsImV4cCI6MjA5MDY0MDYzNX0.TsnM45hNEg8m2J0PdMUG43l-jnYbQ7VoyHUqdzdfJyY';
+        const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Handle the OAuth callback
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                // Successfully signed in
+                window.location.href = '/user-dashboard.html';
+            }
+        });
+
+        // Fallback redirect if no session event fires
+        setTimeout(async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                window.location.href = '/user-dashboard.html';
+            } else {
+                window.location.href = '/user.html?error=auth_failed';
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

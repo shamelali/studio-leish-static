@@ -59,6 +59,17 @@
         }
 
         .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+
+        /* Review Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .modal { background: var(--secondary); border: 1px solid var(--border); border-radius: 16px; padding: 30px; width: 90%; max-width: 500px; }
+        .modal h3 { margin-bottom: 20px; }
+        .star-rating { display: flex; gap: 8px; margin-bottom: 20px; }
+        .star { font-size: 2rem; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+        .star.active { color: var(--gold); }
+        .review-text { width: 100%; height: 120px; background: var(--primary); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); resize: vertical; margin-bottom: 20px; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-secondary { background: var(--primary); border: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -84,10 +95,43 @@
         </div>
     </div>
 
+    <!-- Review Modal -->
+    <div class="modal-overlay" id="review-modal">
+        <div class="modal">
+            <h3>Write a Review</h3>
+            <div class="star-rating" id="star-rating">
+                <span class="star" data-rating="1">☆</span>
+                <span class="star" data-rating="2">☆</span>
+                <span class="star" data-rating="3">☆</span>
+                <span class="star" data-rating="4">☆</span>
+                <span class="star" data-rating="5">☆</span>
+            </div>
+            <textarea class="review-text" id="review-comment" placeholder="Share your experience..."></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+                <button class="btn" onclick="submitReview()">Submit Review</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const supabaseUrl = 'https://vnpiekiedynvechawhhw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucGlla2llZHludmVjaGF3aGh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjQ2MzUsImV4cCI6MjA5MDY0MDYzNX0.TsnM45hNEg8m2J0PdMUG43l-jnYbQ7VoyHUqdzdfJyY';
         const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentBookingId = null;
+        let currentRating = 0;
+
+        // Star rating setup
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                currentRating = parseInt(this.dataset.rating);
+                document.querySelectorAll('.star').forEach(s => {
+                    s.textContent = parseInt(s.dataset.rating) <= currentRating ? '★' : '☆';
+                    s.classList.toggle('active', parseInt(s.dataset.rating) <= currentRating);
+                });
+            });
+        });
 
         (async function() {
             const { data: { session } } = await supabase.auth.getSession();
@@ -111,20 +155,23 @@
         })();
 
         async function loadBookings(userEmail) {
-            const { data, error } = await supabase
-                .from('bookings')
-                .select('*')
-                .eq('clientEmail', userEmail)
-                .order('date', { ascending: true });
+            // Fetch bookings and user's reviews in parallel
+            const [bookingsRes, reviewsRes] = await Promise.all([
+                supabase.from('bookings').select('*').eq('clientEmail', userEmail).order('date', { ascending: true }),
+                supabase.from('reviews').select('booking_id').eq('client_email', userEmail)
+            ]);
 
             document.getElementById('loading').style.display = 'none';
 
-            if (error) {
-                console.error('Error loading bookings:', error);
+            if (bookingsRes.error) {
+                console.error('Error loading bookings:', bookingsRes.error);
                 return;
             }
 
-            if (data.length === 0) {
+            const bookings = bookingsRes.data;
+            const reviewedBookingIds = new Set((reviewsRes.data || []).map(r => r.booking_id));
+
+            if (bookings.length === 0) {
                 document.getElementById('empty-state').style.display = 'block';
                 return;
             }
@@ -132,15 +179,20 @@
             const list = document.getElementById('bookings-list');
             list.style.display = 'grid';
 
-            data.forEach(booking => {
+            bookings.forEach(booking => {
                 const card = document.createElement('div');
                 card.className = 'booking-card';
+                const hasReviewed = reviewedBookingIds.has(booking.id);
+                const canReview = ['confirmed', 'completed'].includes(booking.status) && !hasReviewed;
+
                 card.innerHTML = `
                     <div class="booking-info">
                         <h3>${booking.room || 'Booking'}</h3>
                         <p><i class="far fa-calendar"></i> ${booking.date || 'N/A'} at ${booking.time || 'N/A'}</p>
                         <p><i class="far fa-clock"></i> ${booking.sessionType || 'N/A'}</p>
                         <p><strong>MYR ${booking.totalAmount || 0}</strong></p>
+                        ${canReview ? `<button class="btn" style="margin-top:10px;" onclick="openReviewModal('${booking.id}', '${booking.room}')">Write Review</button>` : ''}
+                        ${hasReviewed ? '<span style="color:var(--success);font-size:14px;"><i class="fas fa-check-circle"></i> Reviewed</span>' : ''}
                     </div>
                     <div>
                         <span class="booking-status status-${booking.status || 'pending'}">${booking.status || 'pending'}</span>
@@ -148,6 +200,40 @@
                 `;
                 list.appendChild(card);
             });
+        }
+
+        function openReviewModal(bookingId, room) {
+            currentBookingId = bookingId;
+            currentRating = 0;
+            document.querySelectorAll('.star').forEach(s => { s.textContent = '☆'; s.classList.remove('active'); });
+            document.getElementById('review-comment').value = '';
+            document.querySelector('#review-modal h3').textContent = `Write a Review for ${room}`;
+            document.getElementById('review-modal').style.display = 'flex';
+        }
+
+        function closeReviewModal() {
+            document.getElementById('review-modal').style.display = 'none';
+            currentBookingId = null;
+        }
+
+        async function submitReview() {
+            if (currentRating === 0) { alert('Please select a rating'); return; }
+            const comment = document.getElementById('review-comment').value.trim();
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { error } = await supabase.from('reviews').insert({
+                booking_id: currentBookingId,
+                client_email: session.user.email,
+                room: document.querySelector('#review-modal h3').textContent.replace('Write a Review for ', ''),
+                rating: currentRating,
+                comment: comment || null
+            });
+
+            if (error) { alert('Error submitting review: ' + error.message); return; }
+            alert('Review submitted successfully!');
+            closeReviewModal();
+            loadBookings(session.user.email);
         }
 
         async function logout() {

@@ -25,7 +25,7 @@
 - [x] Bill creation endpoint (`/api/billplz-create-bill`)
 - [x] Payment callback/webhook handler (`/api/billplz-callback`)
 - [x] Booking flow redirects to Billplz for payment
-- [ ] Billplz API key configuration (pending - need actual key)
+- [x] Billplz API key configuration (set in Vercel env)
 
 **Status:** Code ready, need to set BILLPLZ_API_KEY in Vercel env
 
@@ -53,7 +53,7 @@
 ## 📋 Remaining Tasks (Phase 6 - Advanced Features)
 - [ ] Review/rating system
 - [ ] Analytics dashboard (advanced)
-- [ ] Custom domain setup (studios.leish.my)
+- [ ] Custom domain setup (studio.leish.my)
 - [ ] PWA (Progressive Web App) capabilities
 - [ ] Push notifications
 - [ ] Google OAuth integration

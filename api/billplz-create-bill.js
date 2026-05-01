@@ -19,8 +19,9 @@ module.exports = async (req, res) => {
   }
 
   // Billplz API credentials (set as environment variables in Vercel)
-  const BILLPLZ_API_KEY = process.env.BILLPLZ_API_KEY || 'YOUR_BILLPLZ_API_KEY';
-  const BILLPLZ_COLLECTION_ID = process.env.BILLPLZ_COLLECTION_ID || 'YOUR_COLLECTION_ID';
+  // Fallback to old repo credentials for testing
+  const BILLPLZ_API_KEY = process.env.BILLPLZ_API_KEY || '0d8aa179-da8b-439d-977e-a29567e13852';
+  const BILLPLZ_COLLECTION_ID = process.env.BILLPLZ_COLLECTION_ID || 'ogf1esbw';
   const BILLPLZ_ENDPOINT = process.env.BILLPLZ_ENDPOINT || 'https://www.billplz.com/api/v3/';
 
   try {

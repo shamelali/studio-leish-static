@@ -130,7 +130,7 @@
 |---------|-----------------|-------|
 | **Billplz** | Get API key from billplz.com | `vercel env add BILLPLZ_API_KEY` |
 | **Google OAuth** | Get Client ID/Secret | `vercel env add GOOGLE_CLIENT_ID` |
-| **Custom Domain** | Wait 24-48hrs propagation | `studios.leish.my` |
+| **Custom Domain** | Wait 24-48hrs propagation | `studio.leish.my` |
 
 ---
 

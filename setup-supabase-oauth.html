@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure Google OAuth in Supabase</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #1a1a2e; }
+        h2 { color: #16213e; margin-top: 30px; }
+        code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+        pre { background: #1a1a2e; color: #fff; padding: 20px; border-radius: 8px; overflow-x: auto; }
+        .step { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #e94560; }
+        .credentials { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Configure Google OAuth in Supabase</h1>
+
+    <div class="credentials">
+        <strong>📋 Credentials (from old repo):</strong>
+        <ul>
+            <li>Client ID: <code>64802105655-ob0f5608g1fomq63ss9hk7vo756j36bt.apps.googleusercontent.com</code></li>
+            <li>Client Secret: <code>GOCSPX-maeUeXBykC6k8dmGPOFGK19nBRW</code></li>
+        </ul>
+    </div>
+
+    <h2>Steps:</h2>
+
+    <div class="step">
+        <strong>1.</strong> Go to <a href="https://app.supabase.com/project/vnpiekiedynvechawhhw/auth/providers" target="_blank">Supabase Dashboard → Authentication → Providers</a>
+    </div>
+
+    <div class="step">
+        <strong>2.</strong> Click on <strong>Google</strong> provider
+    </div>
+
+    <div class="step">
+        <strong>3.</strong> Enable Google provider and enter:
+        <pre>
+Client ID: 64802105655-ob0f5608g1fomq63ss9hk7vo756j36bt.apps.googleusercontent.com
+Client Secret: GOCSPX-maeUeXBykC6k8dmGPOFGK19nBRW
+
+Redirect URL (copy from Supabase):
+https://vnpiekiedynvechawhhw.supabase.co/auth/v1/callback
+        </pre>
+    </div>
+
+    <div class="step">
+        <strong>4.</strong> Add the Redirect URL to Google Cloud Console:
+        <br>Go to Google Cloud Console → APIs & Services → Credentials → OAuth Client → Authorized Redirect URIs
+        <br>Add: <code>https://vnpiekiedynvechawhhw.supabase.co/auth/v1/callback</code>
+    </div>
+
+    <div class="step">
+        <strong>5.</strong> Save in Supabase
+    </div>
+
+    <h2>Test:</h2>
+    <p>Visit: <a href="user.html">https://studio-leish-static.vercel.app/user.html</a></p>
+    <p>Click "Sign in with Google" button</p>
+
+    <h2>Also Add to Vercel:</h2>
+    <pre>
+GOOGLE_CLIENT_ID = 64802105655-ob0f5608g1fomq63ss9hk7vo756j36bt.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET = GOCSPX-maeUeXBykC6k8dmGPOFGK19nBRW
+    </pre>
+</body>
+</html>

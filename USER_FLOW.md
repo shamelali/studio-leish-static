@@ -235,7 +235,7 @@ The booking flow uses a step-by-step wizard that adapts to smaller screens with 
 ## 8. Future Enhancements
 
 - **Review/Rating System:** Users can rate studios after sessions
-- **Custom Domain:** Migration to studios.leish.my
+- **Custom Domain:** Migration to studio.leish.my
 - **Google OAuth Testing:** Complete OAuth integration testing
 - **Membership Tiers:** Recurring booking discounts
 - **Calendar Sync:** Add bookings to Google Calendar/Outlook

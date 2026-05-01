@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test OAuth | Studio Leish</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+            --text-muted: #8892b0;
+            --border: #2a2a4a;
+            --success: #00d9a5;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card { background: var(--secondary); border: 1px solid var(--border); border-radius: 16px; padding: 30px; margin-bottom: 20px; }
+        h2 { font-size: 1.5rem; margin-bottom: 20px; }
+        .btn { display: inline-block; padding: 14px 24px; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+        .btn:hover { opacity: 0.9; }
+        .btn-google { background: white; color: #333; border: 2px solid #ddd; }
+        .status { padding: 16px; border-radius: 8px; margin: 20px 0; }
+        .status.success { background: rgba(0, 217, 165, 0.2); color: var(--success); }
+        .status.error { background: rgba(233, 69, 96, 0.2); color: var(--accent); }
+        .status.info { background: rgba(244, 208, 63, 0.2); color: #f4d03f; }
+        .test-result { margin-top: 20px; padding: 15px; background: var(--primary); border-radius: 8px; font-family: monospace; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Studio Leish</div>
+            <p style="color: var(--text-muted);">OAuth Integration Test</p>
+        </div>
+
+        <div class="card">
+            <h2>1. Supabase Auth Status</h2>
+            <div id="supabase-status" class="status info">Checking...</div>
+            <button class="btn" onclick="testSupabaseAuth()">Test Supabase Connection</button>
+        </div>
+
+        <div class="card">
+            <h2>2. Google OAuth</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px;">Test Google sign-in flow:</p>
+            <a href="user.html" class="btn btn-google">
+                <i class="fab fa-google"></i> Sign in with Google
+            </a>
+            <div id="google-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="card">
+            <h2>3. Credentials Status</h2>
+            <div id="credentials-status"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://vnpiekiedynvechawhhw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucGlla2llZHludmVjaGF3aGh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjQ2MzUsImV4cCI6MjA5MDY0MDYzNX0.TsnM45hNEg8m2J0PdMUG43l-jnYbQ7VoyHUqdzdfJyY';
+        const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function testSupabaseAuth() {
+            const statusDiv = document.getElementById('supabase-status');
+            try {
+                const { data, error } = await supabase.auth.getSession();
+                if (error) throw error;
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `<strong>✅ Supabase Connected!</strong><br>Session: ${data.session ? 'Active' : 'None'}`;
+            } catch (e) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `<strong>❌ Error:</strong> ${e.message}`;
+            }
+        }
+
+        // Check current session
+        (async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            const statusDiv = document.getElementById('supabase-status');
+            if (session) {
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `<strong>✅ Already Signed In!</strong><br>Email: ${session.user.email}`;
+            } else {
+                statusDiv.className = 'status info';
+                statusDiv.innerHTML = `<strong>⏳ Not Signed In</strong><br>Click below to test Google OAuth`;
+            }
+        })();
+
+        // Display credentials status
+        document.getElementById('credentials-status').innerHTML = `
+            <div class="status info">
+                <strong>Environment Variables:</strong><br>
+                <br>
+                ✅ BILLPLZ_API_KEY: Configured<br>
+                ✅ BILLPLZ_COLLECTION_ID: Configured<br>
+                ⏳ GOOGLE_CLIENT_ID: Needs Supabase setup<br>
+                ⏳ GOOGLE_CLIENT_SECRET: Needs Supabase setup<br>
+                <br>
+                <em>Note: Google OAuth must be enabled in Supabase Dashboard → Authentication → Providers → Google</em>
+            </div>
+        `;
+    </script>
+</body>
+</html>

@@ -192,6 +192,30 @@
             successDiv.textContent = 'Registration successful! Please check your email to verify.';
             setTimeout(() => showLogin(), 3000);
         }
+
+        async function signInWithGoogle() {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/auth/callback.html',
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent'
+                    }
+                }
+            });
+
+            if (error) {
+                document.getElementById('login-error').textContent = 'Google sign-in failed: ' + error.message;
+                console.error('Google OAuth error:', error);
+            }
+        }
+
+        // Check for auth errors in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error') === 'auth_failed') {
+            document.getElementById('login-error').textContent = 'Authentication failed. Please try again.';
+        }
     </script>
 </body>
 </html>

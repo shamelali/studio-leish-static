@@ -1,0 +1,43 @@
+{
+  "name": "Studio Leish",
+  "short_name": "Leish",
+  "description": "Professional studio spaces for creators, artists, and dreamers.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#1a1a2e",
+  "orientation": "any",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Book a Session",
+      "short_name": "Book",
+      "description": "Book a studio session",
+      "url": "/book.html",
+      "icons": [{"src": "/icons/icon-192x192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Browse Spaces",
+      "short_name": "Browse",
+      "description": "Browse available studio spaces",
+      "url": "/gallery.html",
+      "icons": [{"src": "/icons/icon-192x192.png", "sizes": "192x192"}]
+    }
+  ]
+}
