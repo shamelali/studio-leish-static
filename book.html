@@ -562,6 +562,43 @@
             fill: var(--accent) !important;
         }
 
+        /* Date Picker Input Styling */
+        .date-picker-container input {
+            background: var(--secondary) !important;
+            border: 2px solid var(--border) !important;
+            color: var(--text) !important;
+            font-family: 'Outfit', sans-serif !important;
+            font-size: 1rem !important;
+            padding: 14px 16px !important;
+            border-radius: 8px !important;
+            width: 100% !important;
+            max-width: 300px !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .date-picker-container input:hover {
+            border-color: var(--accent) !important;
+        }
+
+        .date-picker-container input:focus {
+            outline: none !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2) !important;
+        }
+
+        .date-picker-container input::placeholder {
+            color: var(--text-muted) !important;
+        }
+
+        /* Date picker container */
+        .date-picker-container {
+            background: var(--secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
         @media (max-width: 768px) {
             .hero-section h1 { font-size: 2.5rem; }
             .room-grid { grid-template-columns: 1fr; }
@@ -650,11 +687,9 @@
             <p class="step-subtitle">Select your preferred date and available time slot</p>
 
             <div class="datetime-section">
-                <div class="calendar-placeholder">
-                    <i class="fas fa-calendar-alt"></i>
-                    <h3>Date Picker</h3>
-                    <p>Coming soon: Interactive calendar with available dates</p>
-                    <input type="text" id="booking-date" placeholder="Select a date" style="margin-top: 16px; padding: 12px 16px; background: var(--primary); color: var(--text); border: 2px solid var(--border); border-radius: 8px; width: 100%; max-width: 300px; font-size: 1rem; cursor: pointer;">
+                <div class="date-picker-container">
+                    <label for="booking-date" style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-muted);">Select Date</label>
+                    <input type="text" id="booking-date" placeholder="Click to select a date" style="padding: 12px 16px; background: var(--secondary); color: var(--text); border: 2px solid var(--border); border-radius: 8px; width: 100%; max-width: 300px; font-size: 1rem; cursor: pointer; transition: all 0.3s ease;">
                 </div>
 
                 <div>
@@ -1009,15 +1044,22 @@
             }
         }
 
-        // Initialize Flatpickr
+        // Initialize Flatpickr with dark theme
+        let datePicker;
         try {
-            window.flatpickr("#booking-date", {
+            datePicker = window.flatpickr("#booking-date", {
                 minDate: "today",
                 dateFormat: "Y-m-d",
                 disableMobile: true,
-                appendTo: document.querySelector('.calendar-placeholder'),
+                appendTo: document.querySelector('.date-picker-container'),
                 onChange: function(selectedDates, dateStr) {
                     booking.date = dateStr;
+                },
+                onReady: function(selectedDates, dateStr, instance) {
+                    // Auto-open when step 2 becomes active
+                    if (currentStep === 2) {
+                        instance.open();
+                    }
                 }
             });
             console.log('Flatpickr initialized successfully');
@@ -1027,6 +1069,20 @@
             dateInput.type = 'date';
             dateInput.min = new Date().toISOString().split('T')[0];
         }
+
+        // Open Flatpickr when step 2 is shown
+        const originalNextStep = nextStep;
+        nextStep = function() {
+            if (currentStep === 1) {
+                // About to go to step 2
+                setTimeout(() => {
+                    if (datePicker && currentStep === 2) {
+                        datePicker.open();
+                    }
+                }, 100);
+            }
+            return originalNextStep.apply(this, arguments);
+        };
 
         // Read URL params and auto-fill
         function getUrlParams() {
@@ -1232,17 +1288,6 @@
             return total;
         }
 
-        // Initialize Flatpickr
-        try {
-            window.flatpickr("#booking-date", {
-                minDate: "today",
-                dateFormat: "Y-m-d",
-                disableMobile: true,
-                onChange: function(selectedDates, dateStr) {
-                    booking.date = dateStr;
-                }
-            });
-        } catch(e) { console.warn('Flatpickr init failed:', e.message); }
-    </script>
+        </script>
 </body>
 </html>
