@@ -944,6 +944,136 @@
 
         // Navigation functions
         function nextStep() {
+            // Check auth when transitioning from add-ons (step 4) to details (step 5)
+            if (currentStep === 4) {
+                checkAuthAndProceed();
+                return;
+            }
+            
+            if (!validateStep(currentStep)) return;
+            proceedToNextStep();
+        }
+
+        function checkAuthAndProceed() {
+            if (!supabaseClient) {
+                // If Supabase not available, proceed anyway
+                proceedToNextStep();
+                return;
+            }
+            
+            supabaseClient.auth.getSession().then(({ data: { session } }) => {
+                if (!session?.user) {
+                    // Not authenticated - save booking state and redirect to sign in
+                    saveBookingState();
+                    const redirectUrl = encodeURIComponent('user.html?redirect=book.html&step=5');
+                    window.location.href = redirectUrl;
+                    return;
+                }
+                // User is authenticated - proceed
+                proceedToNextStep();
+            });
+        }
+
+        function saveBookingState() {
+            sessionStorage.setItem('pendingBooking', JSON.stringify({
+                room: booking.room,
+                date: booking.date,
+                time: booking.time,
+                session: booking.session,
+                addons: booking.addons,
+                step: 5
+            }));
+        }
+
+        function restoreBookingState() {
+            const saved = sessionStorage.getItem('pendingBooking');
+            if (!saved) return false;
+            
+            try {
+                const state = JSON.parse(saved);
+                if (state.step) {
+                    // Restore booking data
+                    booking.room = state.room;
+                    booking.date = state.date;
+                    booking.time = state.time;
+                    booking.session = state.session;
+                    booking.addons = state.addons || [];
+                    
+                    // Restore UI - room
+                    if (state.room) {
+                        setTimeout(() => {
+                            document.querySelectorAll('.room-card').forEach(card => {
+                                if (card.querySelector('.room-name')?.textContent === state.room?.name) {
+                                    selectRoom(card);
+                                }
+                            });
+                        }, 500);
+                    }
+                    
+                    // Restore UI - date
+                    if (state.date) {
+                        setTimeout(() => {
+                            const dateInput = document.getElementById('booking-date');
+                            if (dateInput._flatpickr) {
+                                dateInput._flatpickr.setDate(state.date);
+                            } else {
+                                dateInput.value = state.date;
+                            }
+                        }, 500);
+                    }
+                    
+                    // Restore UI - time
+                    if (state.time) {
+                        setTimeout(() => {
+                            document.querySelectorAll('.time-slot').forEach(slot => {
+                                if (slot.textContent.trim() === state.time) {
+                                    selectTime(slot);
+                                }
+                            });
+                        }, 500);
+                    }
+                    
+                    // Restore UI - session
+                    if (state.session) {
+                        setTimeout(() => {
+                            document.querySelectorAll('.session-card').forEach(card => {
+                                const sessionType = card.dataset.session;
+                                if (sessionType === state.session?.type?.toLowerCase() || 
+                                    state.session?.type?.includes('Special')) {
+                                    selectSession(card);
+                                }
+                            });
+                        }, 500);
+                    }
+                    
+                    // Restore UI - addons
+                    if (state.addons && state.addons.length > 0) {
+                        setTimeout(() => {
+                            state.addons.forEach(addon => {
+                                document.querySelectorAll('.addon-item').forEach(item => {
+                                    if (item.querySelector('h3')?.textContent === addon.name) {
+                                        const checkbox = item.querySelector('.checkbox');
+                                        if (!checkbox.classList.contains('checked')) {
+                                            checkbox.classList.add('checked');
+                                            booking.addons.push(addon);
+                                        }
+                                    }
+                                });
+                            });
+                        }, 500);
+                    }
+                    
+                    // Clear saved state
+                    sessionStorage.removeItem('pendingBooking');
+                    return true;
+                }
+            } catch(e) {
+                console.warn('Failed to restore booking state:', e.message);
+            }
+            return false;
+        }
+
+        function proceedToNextStep() {
             if (!validateStep(currentStep)) return;
 
             document.querySelector(`#step-${currentStep}`).classList.remove('active');
@@ -1144,6 +1274,22 @@
 
         // Run auto-fill after page loads
         setTimeout(autoFillBooking, 2000);
+        
+        // Check for saved booking state on page load
+        // Also check if user just completed authentication
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Check if returning from auth
+            if (urlParams.get('restored') === 'true') {
+                const authCompleted = sessionStorage.getItem('authCompleted');
+                if (authCompleted === 'true') {
+                    sessionStorage.removeItem('authCompleted');
+                    // Restore booking state after successful auth
+                    restoreBookingState();
+                }
+            }
+        }, 500);
 
         // Update summary
         function updateSummary() {

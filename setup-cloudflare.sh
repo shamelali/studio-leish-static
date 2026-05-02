@@ -6,7 +6,7 @@ set -e
 
 # Configuration (update these)
 DOMAIN="leish.my"
-SUBDOMAIN="studios"
+SUBDOMAIN="studio"
 TARGET_CNAME="cname.vercel-dns.com"
 VERCEL_PROJECT="studio-leish-static"
 

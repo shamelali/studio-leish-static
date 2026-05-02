@@ -930,6 +930,78 @@
             right: 16px;
         }
 
+        /* Footer */
+        .footer {
+            background: var(--primary);
+            border-top: 1px solid var(--border);
+            padding: 60px 20px 30px;
+            margin-top: 60px;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+        }
+        .footer-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+        .footer-section p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+        .footer-links {
+            list-style: none;
+        }
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+        .footer-social {
+            display: flex;
+            gap: 12px;
+        }
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .footer-social a:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-3px);
+        }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
     </style>
 </head>
 <body>
@@ -950,10 +1022,10 @@
                 <div class="logo-icon" id="logoIcon">🎨</div>
                 <h1>Leish Studio</h1>
             </div>
-            <button class="user-btn" id="userBtn">
-                <i class="fas fa-user"></i>
+            <a href="signin.html" class="user-btn" id="userBtn" style="background: linear-gradient(135deg, var(--accent), var(--accent-light)); border: none; padding: 10px 24px;">
+                <i class="fas fa-sign-in-alt"></i>
                 <span id="userBtnText">Sign In</span>
-            </button>
+            </a>
         </header>
 
         <div class="nav-tabs hidden" id="navTabs">
@@ -976,7 +1048,6 @@
             <div class="cta-buttons">
                 <a href="book.html" class="btn btn-primary">Book a Session <i class="fas fa-calendar-plus"></i></a>
                 <a href="gallery.html" class="btn btn-secondary">Our Space <i class="fas fa-images"></i></a>
-                <a href="signin.html" class="btn btn-secondary">Sign In <i class="fas fa-sign-in-alt"></i></a>
             </div>
             </div>
 
@@ -1010,6 +1081,17 @@
                     <button class="slider-nav prev" onclick="moveSlide(-1)">&#10094;</button>
                     <button class="slider-nav next" onclick="moveSlide(1)">&#10095;</button>
                 </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="gallery-section" id="reviewsSection">
+                <h2>What Our Clients Say</h2>
+                <div id="reviewsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto;">
+                    <!-- Reviews loaded dynamically -->
+                </div>
+                <button class="btn-secondary" onclick="openReviewModal()" style="margin-top: 24px;">
+                    <i class="fas fa-star"></i> Leave a Review
+                </button>
             </div>
         </div>
 
@@ -1112,6 +1194,79 @@
                 My Bookings
             </h2>
             <div class="bookings-grid" id="bookingsGrid"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Leish Studio</h3>
+                    <p>Premium workstations and studio spaces for content creators, artists, and professionals.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="book.html">Book a Session</a></li>
+                        <li><a href="gallery.html">Gallery</a></li>
+                        <li><a href="signin.html">Sign In</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">hello@leish.my</a></li>
+                        <li><a href="#">+60 12-345 6789</a></li>
+                        <li><a href="#">Kuala Lumpur, Malaysia</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="footer-social">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Leish Studio. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal" id="reviewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Leave a Review</h2>
+                <button class="modal-close" onclick="closeReviewModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="reviewForm">
+                <div class="form-group">
+                    <label>Your Rating</label>
+                    <div id="starRating" style="display: flex; gap: 8px; font-size: 2rem; cursor: pointer;">
+                        <i class="fas fa-star" data-rating="1" style="color: var(--border);"></i>
+                        <i class="fas fa-star" data-rating="2" style="color: var(--border);"></i>
+                        <i class="fas fa-star" data-rating="3" style="color: var(--border);"></i>
+                        <i class="fas fa-star" data-rating="4" style="color: var(--border);"></i>
+                        <i class="fas fa-star" data-rating="5" style="color: var(--border);"></i>
+                    </div>
+                    <input type="hidden" id="reviewRating" required>
+                </div>
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="reviewName" required placeholder="Your name">
+                </div>
+                <div class="form-group">
+                    <label>Your Review</label>
+                    <input type="text" id="reviewComment" placeholder="Share your experience..." style="height: 80px; padding: 12px;">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Submit Review</button>
+            </form>
         </div>
     </div>
 
@@ -1269,6 +1424,111 @@
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
+
+        // Reviews functionality
+        let selectedRating = 0;
+
+        // Star rating interaction
+        document.querySelectorAll('#starRating i').forEach(star => {
+            star.addEventListener('click', () => {
+                selectedRating = parseInt(star.dataset.rating);
+                document.getElementById('reviewRating').value = selectedRating;
+                updateStars(selectedRating);
+            });
+            star.addEventListener('mouseenter', () => {
+                const rating = parseInt(star.dataset.rating);
+                updateStars(rating);
+            });
+        });
+
+        document.getElementById('starRating').addEventListener('mouseleave', () => {
+            updateStars(selectedRating);
+        });
+
+        function updateStars(rating) {
+            document.querySelectorAll('#starRating i').forEach((star, idx) => {
+                star.style.color = idx < rating ? 'var(--gold)' : 'var(--border)';
+            });
+        }
+
+        function openReviewModal() {
+            document.getElementById('reviewModal').classList.add('active');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('active');
+            document.getElementById('reviewForm').reset();
+            selectedRating = 0;
+            updateStars(0);
+        }
+
+        // Load reviews
+        async function loadReviews() {
+            try {
+                const { data: reviews, error } = await supabaseClient
+                    .from('Booking')
+                    .select('rating, review_comment, client_name, booking_date')
+                    .not('rating', 'is', null)
+                    .order('booking_date', { ascending: false })
+                    .limit(6);
+
+                if (error) throw error;
+
+                const container = document.getElementById('reviewsContainer');
+                if (!reviews || reviews.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>No reviews yet. Be the first to review!</p></div>';
+                    return;
+                }
+
+                container.innerHTML = reviews.map(r => `
+                    <div style="background: var(--secondary); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: left;">
+                        <div style="margin-bottom: 12px;">
+                            ${Array(5).fill(0).map((_, i) => `<i class="fas fa-star" style="color: ${i < r.rating ? 'var(--gold)' : 'var(--border)'}"></i>`).join('')}
+                        </div>
+                        <p style="color: var(--text); margin-bottom: 12px;">${r.review_comment || 'Great experience!'}</p>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">— ${r.client_name || 'Anonymous'}</p>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading reviews:', err);
+            }
+        }
+
+        // Submit review
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const rating = document.getElementById('reviewRating').value;
+            const name = document.getElementById('reviewName').value;
+            const comment = document.getElementById('reviewComment').value;
+
+            if (!rating) {
+                alert('Please select a rating');
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from('Review')
+                    .insert([{
+                        booking_id: 'public-review-' + Date.now(),
+                        client_email: 'public@review.com',
+                        room: 'Public',
+                        rating: parseInt(rating),
+                        comment: comment || null
+                    }]);
+
+                if (error) throw error;
+
+                alert('Thank you for your review!');
+                closeReviewModal();
+                loadReviews();
+            } catch (err) {
+                alert('Error submitting review: ' + err.message);
+            }
+        });
+
+        // Load reviews on page load
+        loadReviews();
     </script>
 </body>
 </html>

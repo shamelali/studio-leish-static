@@ -125,11 +125,17 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucGlla2llZHludmVjaGF3aGh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjQ2MzUsImV4cCI6MjA5MDY0MDYzNX0.TsnM45hNEg8m2J0PdMUG43l-jnYbQ7VoyHUqdzdfJyY';
         const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
 
+        // Get redirect URL from params
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUrl = urlParams.get('redirect') || 'user-dashboard.html';
+
         // Check if already logged in
         (async function() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                window.location.href = 'user-dashboard.html';
+                // Store auth completion flag for book.html
+                sessionStorage.setItem('authCompleted', 'true');
+                window.location.href = redirectUrl + (redirectUrl.includes('?') ? '&' : '?') + 'restored=true';
             }
         })();
 
@@ -160,7 +166,9 @@
                 return;
             }
 
-            window.location.href = 'user-dashboard.html';
+            // Store auth completion flag
+            sessionStorage.setItem('authCompleted', 'true');
+            window.location.href = redirectUrl + (redirectUrl.includes('?') ? '&' : '?') + 'restored=true';
         }
 
         async function register() {
@@ -197,7 +205,7 @@
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin + '/auth/callback.html',
+                    redirectTo: window.location.origin + '/auth/callback.html?redirect=' + encodeURIComponent(redirectUrl),
                     queryParams: {
                         access_type: 'offline',
                         prompt: 'consent'
@@ -212,7 +220,6 @@
         }
 
         // Check for auth errors in URL
-        const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('error') === 'auth_failed') {
             document.getElementById('login-error').textContent = 'Authentication failed. Please try again.';
         }

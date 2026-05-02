@@ -5,7 +5,7 @@
 set -e
 
 DOMAIN="leish.my"
-SUBDOMAIN="studios"
+SUBDOMAIN="studio"
 TARGET_CNAME="cname.vercel-dns.com"
 
 echo "=== Studio Leish - Domain Setup ==="

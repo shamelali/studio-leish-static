@@ -44,11 +44,17 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucGlla2llZHludmVjaGF3aGh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjQ2MzUsImV4cCI6MjA5MDY0MDYzNX0.TsnM45hNEg8m2J0PdMUG43l-jnYbQ7VoyHUqdzdfJyY';
         const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
 
+        // Get redirect URL from params (passed from user.html)
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUrl = urlParams.get('redirect') || 'user-dashboard.html';
+
         // Handle the OAuth callback
         supabase.auth.onAuthStateChange((event, session) => {
             if (session) {
-                // Successfully signed in
-                window.location.href = '/user-dashboard.html';
+                // Successfully signed in - store auth completion flag
+                sessionStorage.setItem('authCompleted', 'true');
+                const targetUrl = redirectUrl + (redirectUrl.includes('?') ? '&' : '?') + 'restored=true';
+                window.location.href = targetUrl;
             }
         });
 
@@ -56,9 +62,11 @@
         setTimeout(async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                window.location.href = '/user-dashboard.html';
+                sessionStorage.setItem('authCompleted', 'true');
+                const targetUrl = redirectUrl + (redirectUrl.includes('?') ? '&' : '?') + 'restored=true';
+                window.location.href = targetUrl;
             } else {
-                window.location.href = '/user.html?error=auth_failed';
+                window.location.href = '/user.html?error=auth_failed&redirect=' + encodeURIComponent(redirectUrl);
             }
         }, 3000);
     </script>
