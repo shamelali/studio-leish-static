@@ -930,55 +930,6 @@
             right: 16px;
         }
 
-        /* Hero Gallery 3x3 */
-        .hero-gallery {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 40px;
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .gallery-item {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 16px;
-            padding: 30px 20px;
-            text-align: center;
-            transition: transform 0.3s, border-color 0.3s;
-            border: 1px solid var(--border);
-        }
-
-        .gallery-item:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-        }
-
-        .gallery-item i {
-            font-size: 2.5rem;
-            color: var(--accent);
-            margin-bottom: 12px;
-        }
-
-        .gallery-item p {
-            color: var(--text);
-            font-size: 1rem;
-            font-weight: 500;
-            margin: 0;
-        }
-
-        @media (max-width: 768px) {
-            .hero-gallery {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero-gallery {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
@@ -1024,19 +975,8 @@
                 <p>Premium workstations and studio spaces for content creators, artists, and professionals. Book by the hour with 24/7 access and secure smart lock entry.</p>
             <div class="cta-buttons">
                 <a href="book.html" class="btn btn-primary">Book a Session <i class="fas fa-calendar-plus"></i></a>
-            </div>
-
-            <!-- 3x3 Hero Gallery -->
-            <div class="hero-gallery">
-                <div class="gallery-item"><i class="fas fa-desktop"></i><p>Workstation 1</p></div>
-                <div class="gallery-item"><i class="fas fa-video"></i><p>Studio Space</p></div>
-                <div class="gallery-item"><i class="fas fa-palette"></i><p>Creative Area</p></div>
-                <div class="gallery-item"><i class="fas fa-headphones"></i><p>Audio Booth</p></div>
-                <div class="gallery-item"><i class="fas fa-camera"></i><p>Photo Studio</p></div>
-                <div class="gallery-item"><i class="fas fa-microphone"></i><p>Recording Room</p></div>
-                <div class="gallery-item"><i class="fas fa-laptop"></i><p>Co-working</p></div>
-                <div class="gallery-item"><i class="fas fa-lightbulb"></i><p>Workshop</p></div>
-                <div class="gallery-item"><i class="fas fa-couch"></i><p>Lounge</p></div>
+                <a href="gallery.html" class="btn btn-secondary">Our Space <i class="fas fa-images"></i></a>
+                <a href="signin.html" class="btn btn-secondary">Sign In <i class="fas fa-sign-in-alt"></i></a>
             </div>
             </div>
 

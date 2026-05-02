@@ -1,1 +1,8 @@
 .vercel
+.env.local
+.env
+node_modules
+types/
+app/
+utils/
+middleware.ts

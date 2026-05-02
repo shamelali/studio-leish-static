@@ -719,18 +719,31 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('login-error');
+            const loginBtn = document.querySelector('#login-form .btn');
 
             if (!email || !password) {
                 errorDiv.textContent = 'Please enter email and password';
                 return;
             }
 
+            // Show loading state
+            loginBtn.textContent = 'Signing in...';
+            loginBtn.disabled = true;
+            errorDiv.textContent = '';
+
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
+                loginBtn.textContent = 'Sign In';
+                loginBtn.disabled = false;
                 errorDiv.textContent = error.message;
+                console.error('Login error:', error);
                 return;
             }
+
+            console.log('Login successful:', data);
+            errorDiv.style.color = 'var(--success)';
+            errorDiv.textContent = 'Login successful! Redirecting...';
 
             showDashboard();
         }
