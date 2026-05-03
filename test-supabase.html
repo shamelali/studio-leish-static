@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Test | Studio Leish</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #0f0f1a; color: #eaeaea; }
+        .success { color: #00d9a5; }
+        .error { color: #e94560; }
+        .info { color: #8892b0; }
+        pre { background: #1a1a2e; padding: 15px; border-radius: 8px; overflow-x: auto; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
+        
+        function log(msg, type = 'info') {
+            results.innerHTML += `<p class="${type}">[${new Date().toLocaleTimeString()}] ${msg}</p>`;
+        }
+        
+        async function test() {
+            log('Starting Supabase test...');
+            
+            if (!window.Supabase) {
+                log('ERROR: Supabase library not loaded', 'error');
+                return;
+            }
+            log('Supabase library loaded', 'success');
+            
+            const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+            log('Supabase client created', 'success');
+            
+            // Test 1: Check auth
+            log('Testing authentication...');
+            const { data: authData, error: authError } = await supabase.auth.getSession();
+            if (authError) {
+                log('Auth check error: ' + authError.message, 'error');
+            } else {
+                log('Auth check OK - session: ' + (authData.session ? 'yes' : 'no'), 'success');
+            }
+            
+            // Test 2: Check bookings table
+            log('Testing bookings table...');
+            const { data: bookingsData, error: bookingsError } = await supabase
+                .from('bookings')
+                .select('*')
+                .limit(5);
+            
+            if (bookingsError) {
+                log('Bookings error: ' + bookingsError.message, 'error');
+            } else {
+                log('Bookings table OK - found ' + bookingsData.length + ' records', 'success');
+            }
+            
+            // Test 3: Check users table
+            log('Testing users table...');
+            const { data: usersData, error: usersError } = await supabase
+                .from('users')
+                .select('*')
+                .limit(5);
+            
+            if (usersError) {
+                log('Users error: ' + usersError.message, 'error');
+            } else {
+                log('Users table OK - found ' + usersData.length + ' records', 'success');
+                if (usersData.length > 0) {
+                    log('Sample user: ' + JSON.stringify(usersData[0], null, 2));
+                }
+            }
+            
+            // Test 4: Try login with admin credentials
+            log('Testing admin login...');
+            const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                email: 'shamel@leish.my',
+                password: 'leish788'
+            });
+            
+            if (loginError) {
+                log('Admin login FAILED: ' + loginError.message, 'error');
+                log('This means the admin user does not exist in Supabase Auth', 'error');
+                log('Solution: Run the SQL in add-two-admins.sql in your Supabase SQL Editor', 'info');
+            } else {
+                log('Admin login SUCCESS!', 'success');
+                log('User ID: ' + loginData.user.id);
+            }
+        }
+        
+        test();
+    </script>
+</body>
+</html>

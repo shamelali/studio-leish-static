@@ -358,20 +358,46 @@
     </div>
 
     <script>
+        // Debug logging
+        console.log('Admin page loading...');
+        
+        // Check Supabase is loaded
+        if (!window.Supabase) {
+            document.getElementById('login-error').textContent = 'Error: Supabase library not loaded. Check your internet connection.';
+            console.error('Supabase not loaded!');
+        } else {
+            console.log('Supabase library loaded successfully');
+        }
+
         const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
-        const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+        
+        let supabase;
+        try {
+            supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+            console.log('Supabase client initialized');
+        } catch (e) {
+            console.error('Failed to init Supabase:', e);
+            document.getElementById('login-error').textContent = 'Error: Failed to connect to database. ' + e.message;
+        }
 
         let allBookings = []; // Store all bookings for filtering
         let currentBookingId = null;
 
         // Check if already logged in
         (async function() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) showDashboard();
+            if (!supabase) return;
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                console.log('Session check:', session ? 'logged in' : 'not logged in');
+                if (session) showDashboard();
+            } catch (e) {
+                console.error('Session check failed:', e);
+            }
         })();
 
         async function login() {
+            console.log('Login function called');
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('login-error');
@@ -379,6 +405,12 @@
 
             if (!email || !password) {
                 errorDiv.textContent = 'Please enter email and password';
+                console.log('Missing email or password');
+                return;
+            }
+
+            if (!supabase) {
+                errorDiv.textContent = 'Error: Database not connected. Please refresh and try again.';
                 return;
             }
 
@@ -386,22 +418,32 @@
             loginBtn.textContent = 'Signing in...';
             loginBtn.disabled = true;
             errorDiv.textContent = '';
+            errorDiv.style.color = '#e94560';
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            console.log('Attempting login for:', email);
 
-            if (error) {
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    loginBtn.textContent = 'Sign In';
+                    loginBtn.disabled = false;
+                    errorDiv.textContent = 'Login failed: ' + error.message;
+                    console.error('Login error:', error);
+                    return;
+                }
+
+                console.log('Login successful:', data);
+                errorDiv.style.color = 'var(--success)';
+                errorDiv.textContent = 'Login successful! Redirecting...';
+
+                showDashboard();
+            } catch (e) {
                 loginBtn.textContent = 'Sign In';
                 loginBtn.disabled = false;
-                errorDiv.textContent = error.message;
-                console.error('Login error:', error);
-                return;
+                errorDiv.textContent = 'Connection error: ' + e.message;
+                console.error('Login exception:', e);
             }
-
-            console.log('Login successful:', data);
-            errorDiv.style.color = 'var(--success)';
-            errorDiv.textContent = 'Login successful! Redirecting...';
-
-            showDashboard();
         }
 
         function logout() {
