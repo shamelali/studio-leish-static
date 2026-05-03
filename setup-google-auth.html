@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device100%">
+    <title>Configure Google OAuth | Studio Leish</title>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+            --text-muted: #8892b0;
+            --success: #00d9a5;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--surface); color: var(--text); padding: 40px 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { color: var(--accent); margin: 30px 0 15px; font-size: 1.3rem; }
+        .step { background: var(--secondary); border: 1px solid #2a2a4a; border-radius: 12px; padding: 20px; margin: 15px 0; }
+        .step strong { color: var(--accent); }
+        code { background: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 0.9rem; }
+        pre { background: var(--primary); padding: 15px; border-radius: 8px; overflow-x: auto; margin: 10px 0; }
+        .credentials { background: #1a3a2a; border: 1px solid var(--success); border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .credentials h3 { color: var(--success); margin-bottom: 10px; }
+        .note { background: #3a2a1a; border-left: 4px solid var(--accent); padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+        a { color: var(--accent); }
+        .btn { display: inline-block; background: var(--accent); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin: 10px 5px 10px 0; }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Configure Google OAuth</h1>
+        <p>Follow these steps to enable Google sign-in for your Studio Leish app.</p>
+
+        <div class="credentials">
+            <h3>Your Google OAuth Credentials</h3>
+            <p><strong>Client ID:</strong> <code>64802105655-ob0f5608g1fomq63ss9hk7vo756j36bt.apps.googleusercontent.com</code></p>
+            <p><strong>Client Secret:</strong> <code>GOCSPX-maeUeXBykC6k8dmGPOFGK19nBRW</code></p>
+        </div>
+
+        <h2>Step 1: Open Supabase Google Provider</h2>
+        <div class="step">
+            <p><a href="https://app.supabase.com/project/kcmoibrqyrzueslaqtgc/auth/providers" target="_blank" class="btn">Open Supabase Auth Settings</a></p>
+            <p>Click the link above, then click on <strong>Google</strong> provider.</p>
+        </div>
+
+        <h2>Step 2: Enable and Configure Google</h2>
+        <div class="step">
+            <p><strong>1.</strong> Toggle <strong>Enable Google sign-in</strong> to ON</p>
+            <p><strong>2.</strong> Enter the credentials from above:</p>
+            <pre>Client ID: 64802105655-ob0f5608g1fomq63ss9hk7vo756j36bt.apps.googleusercontent.com
+Client Secret: GOCSPX-maeUeXBykC6k8dmGPOFGK19nBRW</pre>
+            <p><strong>3.</strong> Copy the <strong>Redirect URL</strong> shown (should be: <code>https://kcmoibrqyrzueslaqtgc.supabase.co/auth/v1/callback</code>)</p>
+            <p><strong>4.</strong> Click <strong>Save</strong></p>
+        </div>
+
+        <h2>Step 3: Add Redirect URL to Google Cloud Console</h2>
+        <div class="step">
+            <p><a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="btn">Open Google Cloud Console</a></p>
+            <p><strong>1.</strong> Click on your OAuth 2.0 Client</p>
+            <p><strong>2.</strong> Under <strong>Authorized redirect URIs</strong>, click <strong>+ Add URI</strong></p>
+            <p><strong>3.</strong> Paste: <code>https://kcmoibrqyrzueslaqtgc.supabase.co/auth/v1/callback</code></p>
+            <p><strong>4.</strong> Click <strong>Save</strong></p>
+        </div>
+
+        <div class="note">
+            <strong>Important:</strong> Make sure your domain <code>studio-leish-static.vercel.app</code> is added to <strong>Authorized JavaScript origins</strong> in Google Cloud Console.
+        </div>
+
+        <h2>Step 4: Test</h2>
+        <div class="step">
+            <p>Once configured, test here:</p>
+            <p><a href="user.html" class="btn">Test Google Sign-In</a></p>
+        </div>
+    </div>
+</body>
+</html>
