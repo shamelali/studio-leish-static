@@ -10,7 +10,10 @@ module.exports = async (req, res) => {
   const supabaseUrl = 'https://vnpiekiedynvechawhhw.supabase.co';
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucGlla2llZHludmVjaGF3aGh3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTA2NDYzNSwiZXhwIjoyMDkwNjQwNjM1fQ.8m2J0PdMUG43l-jnYbQ7VoyHUqdzdfJyY';
   
-  const BILLPLZ_API_KEY = process.env.BILLPLZ_API_KEY || '0d8aa179-da8b-439d-977e-a29567e13852';
+  const BILLPLZ_API_KEY = process.env.BILLPLZ_API_KEY;
+  if (!BILLPLZ_API_KEY) {
+    return res.status(500).send('BILLPLZ_API_KEY not configured');
+  }
 
   try {
     // Fetch bill status from Billplz
