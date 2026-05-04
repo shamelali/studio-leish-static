@@ -1,0 +1,12 @@
+Using locale 'en_US.UTF-8'.
+
+
+Mon May  4 20:29:54 2026
+Command line: PhotoRec /log /d /tmp/recup /dev/sdc
+
+PhotoRec 7.1, Data Recovery Utility, July 2019
+Christophe GRENIER <grenier@cgsecurity.org>
+https://www.cgsecurity.org
+OS: Linux, kernel 6.17.0-23-generic (#23~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue Apr 14 16:11:48 UTC 2) x86_64
+Compiler: GCC 13.2
+ext2fs lib: 1.47.0, ntfs lib: libntfs-3g, ewf lib: none, libjpeg: libjpeg-turbo-2.1.5, curses lib: ncurses 6.4
