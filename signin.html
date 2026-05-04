@@ -316,34 +316,14 @@
                     <input type="email" id="email" placeholder="you@email.com" required>
                 </div>
 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="••••••••" required>
-                </div>
-
-                <div class="form-options">
-                    <label class="remember-me">
-                        <input type="checkbox" id="remember">
-                        Remember me
-                    </label>
-                </div>
-
                 <button type="submit" class="btn-signin">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
-                </button>
-
-                <button type="button" class="btn-signin" style="background: transparent; border: 2px solid var(--border); margin-top: 10px;" onclick="sendMagicLink()">
                     <i class="fas fa-envelope"></i> Send Magic Link
                 </button>
             </form>
 
-            <div class="divider">
-                <span>or continue with</span>
-            </div>
-
             <div class="social-signin">
                 <button class="btn-social" onclick="signInWithGoogle()">
-                    <i class="fab fa-google"></i> Google
+                    <i class="fab fa-google"></i> Continue with Google
                 </button>
             </div>
 
@@ -377,26 +357,34 @@
 
         document.getElementById('signinForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('login-error');
+            const email = document.getElementById('email').value.trim();
+            const errorDiv = document.getElementById('login-error') || document.createElement('div');
             const submitBtn = this.querySelector('button[type="submit"]');
 
+            if (!email) {
+                alert('Please enter your email');
+                return;
+            }
+
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Signing in...';
+            submitBtn.textContent = 'Sending...';
             errorDiv.textContent = '';
 
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { error } = await supabase.auth.signInWithOtp({
                 email,
-                password
+                options: {
+                    emailRedirectTo: magicRedirectUrl
+                }
             });
 
             if (error) {
-                errorDiv.textContent = error.message;
+                alert(error.message);
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Sign In';
+                submitBtn.textContent = 'Send Magic Link';
             } else {
-                window.location.href = 'index.html';
+                alert('Check your email for the login link!');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Magic Link';
             }
         });
 
@@ -408,30 +396,6 @@
                 }
             });
             if (error) console.error('Google sign in error:', error);
-        }
-
-        async function sendMagicLink() {
-            const email = document.getElementById('email').value.trim();
-            const errorDiv = document.getElementById('login-error');
-            
-            if (!email) {
-                errorDiv.textContent = 'Please enter your email first';
-                return;
-            }
-
-            const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: {
-                    emailRedirectTo: magicRedirectUrl
-                }
-            });
-
-            if (error) {
-                errorDiv.textContent = error.message;
-            } else {
-                errorDiv.textContent = 'Check your email for the login link!';
-                errorDiv.style.color = 'var(--success)';
-            }
         }
     </script>
 </body>
