@@ -1,7 +1,7 @@
 // API: Google OAuth
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_SECRET;
-const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://studio-leish-static.vercel.app/api/google-callback';
+const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://studio.leish.my/api/google-oauth';
 
 module.exports = async (req, res) => {
   const { code } = req.query;
@@ -45,22 +45,9 @@ module.exports = async (req, res) => {
 
     const userInfo = await userResponse.json();
 
-    // Here you would typically:
-    // 1. Check if user exists in your database
-    // 2. Create or update user record
-    // 3. Create a session/JWT
-
-    // For now, return the user info - integrate with Supabase Auth
-    return res.status(200).json({
-      success: true,
-      user: {
-        id: userInfo.id,
-        email: userInfo.email,
-        name: userInfo.name,
-        picture: userInfo.picture
-      },
-      access_token: tokens.access_token
-    });
+    // Redirect to user dashboard with user info as params
+    const userParams = Buffer.from(JSON.stringify(userInfo)).toString('base64');
+    return res.redirect(`/user-dashboard.html?auth=${userParams}`);
 
   } catch (error) {
     console.error('Google OAuth error:', error);

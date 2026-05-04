@@ -3,403 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | Leish Studio</title>
+    <title>Sign Up | Studio Leish</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #1a1a2e;
             --secondary: #16213e;
             --accent: #e94560;
-            --accent-light: #ff6b6b;
-            --gold: #f4d03f;
             --surface: #0f0f1a;
             --text: #eaeaea;
             --text-muted: #8892b0;
-            --success: #00d9a5;
-            --border: #2a2a4a;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--surface);
-            color: var(--text);
-            min-height: 100vh;
-        }
-
-        .bg-pattern {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            background:
-                radial-gradient(ellipse at 20% 20%, rgba(233, 69, 96, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(244, 208, 63, 0.05) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(22, 33, 62, 0.8) 0%, var(--surface) 100%);
-        }
-
-        .container {
-            position: relative;
-            z-index: 1;
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 40px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-        }
-
-        .logo-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--accent), var(--gold));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-
-        .logo h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--text), var(--accent-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .back-btn {
-            padding: 10px 20px;
-            background: var(--secondary);
-            border: 1px solid var(--border);
-            border-radius: 50px;
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .back-btn:hover {
-            border-color: var(--accent);
-        }
-
-        .signup-container {
-            background: var(--primary);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 40px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .signup-header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .signup-header h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .signup-header p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 1rem;
-            font-family: 'Outfit', sans-serif;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
-        }
-
-        .btn-signup {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Outfit', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-signup:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(233, 69, 96, 0.3);
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 24px 0;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .divider span {
-            padding: 0 16px;
-        }
-
-        .social-signin {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .btn-social {
-            flex: 1;
-            padding: 12px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Outfit', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 1rem;
-        }
-
-        .btn-social:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-
-        .signin-link {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .signin-link a {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .signin-link a:hover {
-            color: var(--accent-light);
-        }
-
-        .terms {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .terms a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .error {
-            color: var(--accent);
-            font-size: 0.9rem;
-            margin-top: 10px;
-            display: none;
-        }
-
-        @media (max-width: 600px) {
-            .signup-container {
-                padding: 30px 20px;
-            }
-
-            .signup-header h2 {
-                font-size: 1.6rem;
-            }
-        }
+        body { font-family: 'Outfit', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { width: 100%; max-width: 400px; padding: 20px; }
+        .logo { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 30px; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .back-btn { position: absolute; top: 20px; left: 20px; color: var(--text); text-decoration: none; }
+        .signup-container { background: var(--secondary); border-radius: 16px; padding: 40px; text-align: center; }
+        h2 { margin-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group input { width: 100%; padding: 14px; background: var(--primary); border: 2px solid #2a2a4a; border-radius: 8px; color: var(--text); font-size: 1rem; }
+        .form-group input:focus { outline: none; border-color: var(--accent); }
+        .btn, .btn-signup { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent), #ff6b6b); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 15px; }
+        .btn-signup:hover { opacity: 0.9; }
+        .btn-social { width: 100%; padding: 14px; background: white; color: #333; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .btn-social:hover { background: #f5f5f5; }
+        .divider { margin: 25px 0; color: var(--text-muted); }
+        .toggle-link { color: var(--text-muted); font-size: 14px; }
+        .toggle-link a { color: var(--accent); text-decoration: none; }
     </style>
 </head>
 <body>
-    <div class="bg-pattern"></div>
-    
     <div class="container">
-        <div class="header">
-            <div class="logo" onclick="window.location.href='index.html'">
-                <div class="logo-icon"><i class="fas fa-palette"></i></div>
-                <h1>Leish Studio</h1>
-            </div>
-            <a href="index.html" class="back-btn">
-                <i class="fas fa-arrow-left"></i> Back
-            </a>
-        </div>
-
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
+        <div class="logo">Studio Leish</div>
         <div class="signup-container">
-            <div class="signup-header">
-                <h2>Create Account</h2>
-                <p>Join us to book your creative space</p>
-            </div>
-
+            <h2>Sign Up</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Create an account to book spaces</p>
+            
+            <button class="btn-social" onclick="signUpWithGoogle()">
+                <i class="fab fa-google"></i> Continue with Google
+            </button>
+            
+            <div class="divider">or</div>
+            
             <form id="signupForm">
                 <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input type="text" id="name" placeholder="Your full name" required>
+                    <input type="email" id="email" placeholder="your@email.com" required>
                 </div>
-
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" placeholder="you@email.com" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="••••••••" required minlength="6">
-                </div>
-
-                <div class="form-group">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <input type="password" id="confirmPassword" placeholder="••••••••" required>
-                </div>
-
-                <p class="terms">By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></p>
-
-                <button type="submit" class="btn-signup">
-                    <i class="fas fa-user-plus"></i> Create Account
-                </button>
-                <div id="signupError" class="error"></div>
+                <button type="submit" class="btn-signup">Send Sign Up Link</button>
             </form>
-
-            <div class="divider">
-                <span>or continue with</span>
-            </div>
-
-            <div class="social-signin">
-                <button class="btn-social" onclick="signUpWithGoogle()">
-                    <i class="fab fa-google"></i> Google
-                </button>
-            </div>
-
-            <div class="signin-link">
-                Already have an account? <a href="signin.html">Sign In</a>
-            </div>
+            
+            <p class="toggle-link">Already have an account? <a href="signin.html">Sign in</a></p>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
-        const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+        
+        const supabaseLib = window.Supabase || window.supabase;
+        const supabase = supabaseLib ? supabaseLib.createClient(supabaseUrl, supabaseKey) : null;
 
-        document.getElementById('signupForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const errorDiv = document.getElementById('signupError');
+        function signUpWithGoogle() {
+            window.location.href = '/api/google-oauth';
+        }
 
-            if (password !== confirmPassword) {
-                errorDiv.textContent = 'Passwords do not match';
-                errorDiv.style.display = 'block';
-                return;
-            }
+        if (supabase) {
+            document.getElementById('signupForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('email').value.trim();
+                const btn = this.querySelector('button[type="submit"]');
 
-            if (password.length < 6) {
-                errorDiv.textContent = 'Password must be at least 6 characters';
-                errorDiv.style.display = 'block';
-                return;
-            }
+                if (!email) return alert('Please enter your email');
+                
+                btn.disabled = true;
+                btn.textContent = 'Sending...';
 
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: { name }
+                const { error } = await supabase.auth.signInWithOtp({
+                    email,
+                    options: { emailRedirectTo: 'https://studio.leish.my' }
+                });
+
+                if (error) {
+                    alert(error.message);
+                } else {
+                    alert('Check your email for the sign up link!');
+                    window.location.href = 'signin.html';
                 }
+                btn.disabled = false;
+                btn.textContent = 'Send Sign Up Link';
             });
-
-            if (error) {
-                errorDiv.textContent = error.message;
-                errorDiv.style.display = 'block';
-            } else {
-                alert('Account created! Please check your email to verify your account.');
-                window.location.href = 'signin.html';
-            }
-        });
-
-        async function signUpWithGoogle() {
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin + '/auth/callback.html?redirect=user-dashboard.html'
-                }
-            });
-
-            if (error) {
-                document.getElementById('signupError').textContent = 'Google sign-in failed: ' + error.message;
-                document.getElementById('signupError').style.display = 'block';
-            }
         }
     </script>
 </body>

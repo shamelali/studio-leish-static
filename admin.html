@@ -211,6 +211,18 @@
                 </div>
             </div>
 
+            <h3 style="margin-bottom: 20px; margin-top: 30px;">Site Settings</h3>
+            <div style="background: var(--secondary); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <label style="color: var(--text-muted);">Logo (emoji):</label>
+                        <input type="text" id="logo-input" value="🎨" style="width: 60px; padding: 8px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); text-align: center; font-size: 1.5rem;" maxlength="10">
+                    </div>
+                    <button onclick="saveLogo()" style="padding: 8px 20px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Save Logo</button>
+                    <span id="logo-saved" style="color: var(--success); display: none;">Saved!</span>
+                </div>
+            </div>
+
             <h3 style="margin-bottom: 20px;">Booking Management</h3>
 
             <!-- Search & Filter Controls -->
@@ -450,6 +462,19 @@
             supabase.auth.signOut();
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('login-form').style.display = 'block';
+        }
+
+        async function saveLogo() {
+            const logoValue = document.getElementById('logo-input').value;
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'logo', value: logoValue }, { onConflict: 'key' });
+            
+            const savedMsg = document.getElementById('logo-saved');
+            if (!error) {
+                savedMsg.style.display = 'inline';
+                setTimeout(() => savedMsg.style.display = 'none', 2000);
+            }
         }
 
         function showDashboard() {

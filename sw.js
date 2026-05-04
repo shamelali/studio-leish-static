@@ -1,5 +1,5 @@
 // Service Worker for Studio Leish PWA
-const CACHE_NAME = 'studio-leish-v1';
+const CACHE_NAME = 'studio-leish-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -8,7 +8,9 @@ const urlsToCache = [
   '/user.html',
   '/user-dashboard.html',
   '/admin-enhanced.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/signin.html',
+  '/signup.html'
 ];
 
 // Install event - cache assets
@@ -41,6 +43,19 @@ self.addEventListener('activate', event => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // Only cache http/https requests (skip chrome-extension, etc.)
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Don't cache API/Auth requests - pass through directly
+  if (url.pathname.startsWith('/auth/') || url.hostname.includes('supabase.co') || url.hostname.includes('googleapis') || url.hostname.includes('google.com')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -59,6 +74,9 @@ self.addEventListener('fetch', event => {
               cache.put(event.request, responseToCache);
             });
           return response;
+        }).catch(err => {
+          // Network error - just pass through
+          return fetch(event.request);
         });
       })
   );
