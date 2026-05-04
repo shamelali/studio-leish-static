@@ -344,12 +344,14 @@
             errorDiv.textContent = '';
             errorDiv.style.display = 'none';
 
+            console.log('Sending magic link to:', email);
             const { error } = await supabase.auth.signInWithOtp({
                 email,
                 options: {
                     emailRedirectTo: window.location.origin + '/index.html'
                 }
             });
+            console.log('Response:', { error });
 
             if (error) {
                 errorDiv.textContent = error.message;
