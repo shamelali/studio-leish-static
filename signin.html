@@ -339,7 +339,7 @@
             </div>
 
             <div class="social-signin">
-                <button class="btn-social">
+                <button class="btn-social" onclick="signInWithGoogle()">
                     <i class="fab fa-google"></i> Google
                 </button>
             </div>
@@ -351,15 +351,44 @@
     </div>
 
     <script>
-        document.getElementById('signinForm').addEventListener('submit', function(e) {
+        const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
+        const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+
+        document.getElementById('signinForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
-            // TODO: Implement actual authentication with Supabase
-            console.log('Sign in attempt:', { email, password });
-            alert('Sign in functionality will be implemented with Supabase authentication.');
+            const errorDiv = document.getElementById('login-error');
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing in...';
+            errorDiv.textContent = '';
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) {
+                errorDiv.textContent = error.message;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In';
+            } else {
+                window.location.href = 'index.html';
+            }
         });
+
+        async function signInWithGoogle() {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/index.html'
+                }
+            });
+            if (error) console.error('Google sign in error:', error);
+        }
     </script>
 </body>
 </html>
