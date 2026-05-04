@@ -301,31 +301,13 @@
                 <p>Join us to book your creative space</p>
             </div>
 
-            <form id="signupForm">
-                <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input type="text" id="name" placeholder="Your full name" required>
-                </div>
-
+<form id="signupForm">
                 <div class="form-group">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" placeholder="you@email.com" required>
+                    <input type="email" id="email" placeholder="you@example.com" required>
                 </div>
-
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="••••••••" required minlength="6">
-                </div>
-
-                <div class="form-group">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <input type="password" id="confirmPassword" placeholder="••••••••" required>
-                </div>
-
-                <p class="terms">By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></p>
-
                 <button type="submit" class="btn-signup">
-                    <i class="fas fa-user-plus"></i> Create Account
+                    <i class="fas fa-envelope"></i> Send Sign Up Link
                 </button>
                 <div id="signupError" class="error"></div>
             </form>
@@ -353,37 +335,29 @@
 
         document.getElementById('signupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
             const errorDiv = document.getElementById('signupError');
+            const submitBtn = this.querySelector('button[type="submit"]');
 
-            if (password !== confirmPassword) {
-                errorDiv.textContent = 'Passwords do not match';
-                errorDiv.style.display = 'block';
-                return;
-            }
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            errorDiv.textContent = '';
+            errorDiv.style.display = 'none';
 
-            if (password.length < 6) {
-                errorDiv.textContent = 'Password must be at least 6 characters';
-                errorDiv.style.display = 'block';
-                return;
-            }
-
-            const { data, error } = await supabase.auth.signUp({
+            const { error } = await supabase.auth.signInWithOtp({
                 email,
-                password,
                 options: {
-                    data: { name }
+                    emailRedirectTo: window.location.origin + '/index.html'
                 }
             });
 
             if (error) {
                 errorDiv.textContent = error.message;
                 errorDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Sign Up Link';
             } else {
-                alert('Account created! Please check your email to verify your account.');
+                alert('Check your email for the sign up link!');
                 window.location.href = 'signin.html';
             }
         });
