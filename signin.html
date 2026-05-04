@@ -358,6 +358,23 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
         const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
 
+        const magicRedirectUrl = 'https://studio.leish.my';
+        const oauthRedirectUrl = 'https://studio.leish.my/index.html';
+
+        // Auth state on load
+        (async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                window.location.href = 'index.html';
+            }
+        })();
+
+        supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                window.location.href = 'index.html';
+            }
+        });
+
         document.getElementById('signinForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -387,14 +404,14 @@
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: 'https://studio.leish.my/index.html'
+                    redirectTo: oauthRedirectUrl
                 }
             });
             if (error) console.error('Google sign in error:', error);
         }
 
         async function sendMagicLink() {
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const errorDiv = document.getElementById('login-error');
             
             if (!email) {
@@ -405,7 +422,7 @@
             const { error } = await supabase.auth.signInWithOtp({
                 email,
                 options: {
-                    emailRedirectTo: window.location.origin + '/index.html'
+                    emailRedirectTo: magicRedirectUrl
                 }
             });
 
