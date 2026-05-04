@@ -1,5 +1,5 @@
 // Service Worker for Studio Leish PWA
-const CACHE_NAME = 'studio-leish-v1';
+const CACHE_NAME = 'studio-leish-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -8,7 +8,9 @@ const urlsToCache = [
   '/user.html',
   '/user-dashboard.html',
   '/admin-enhanced.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/signin.html',
+  '/signup.html'
 ];
 
 // Install event - cache assets
@@ -48,8 +50,9 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Don't cache API requests
-  if (url.pathname.startsWith('/auth/') || url.hostname.includes('supabase.co')) {
+  // Don't cache API/Auth requests - pass through directly
+  if (url.pathname.startsWith('/auth/') || url.hostname.includes('supabase.co') || url.hostname.includes('googleapis') || url.hostname.includes('google.com')) {
+    event.respondWith(fetch(event.request));
     return;
   }
 

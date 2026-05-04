@@ -1350,7 +1350,13 @@
         // Supabase initialization
         const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
-        const supabaseClient = window.Supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // Handle both v1 and v2 CDN global names
+        const lib = window.Supabase || window.supabase;
+        if (!lib) {
+            console.error('Supabase library not loaded');
+        }
+        const supabaseClient = lib ? lib.createClient(supabaseUrl, supabaseKey) : null;
 
         let currentUser = null;
         let pendingBooking = null;
