@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leish Studio | Book Your Creative Space</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+    <link rel="shortcut icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1349,7 +1350,13 @@
         // Supabase initialization
         const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
-        const supabaseClient = window.Supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // Handle both v1 and v2 CDN global names
+        const lib = window.Supabase || window.supabase;
+        if (!lib) {
+            console.error('Supabase library not loaded');
+        }
+        const supabaseClient = lib ? lib.createClient(supabaseUrl, supabaseKey) : null;
 
         let currentUser = null;
         let pendingBooking = null;
@@ -1419,6 +1426,7 @@
         }
     </script>
 
+    
     <script>
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
