@@ -48,6 +48,11 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Don't cache API requests
+  if (url.pathname.startsWith('/auth/') || url.hostname.includes('supabase.co')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -66,6 +71,9 @@ self.addEventListener('fetch', event => {
               cache.put(event.request, responseToCache);
             });
           return response;
+        }).catch(err => {
+          // Network error - just pass through
+          return fetch(event.request);
         });
       })
   );
