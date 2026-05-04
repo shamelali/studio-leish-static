@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leish Studio | Book Your Creative Space</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+    <link rel="shortcut icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -1368,6 +1370,13 @@
             }
         });
 
+        // Fetch logo from settings
+        supabaseClient.from('site_settings').select('value').eq('key', 'logo').then(({ data }) => {
+            if (data && data[0]?.value) {
+                document.getElementById('logoIcon').textContent = data[0].value;
+            }
+        });
+
         function updateAuthUI() {
             const authBtn = document.getElementById('authBtn');
             if (currentUser) {
@@ -1411,7 +1420,7 @@
         }
     </script>
 
-    <script src="/js/app.js"></script>
+    
     <script>
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
