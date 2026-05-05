@@ -1,0 +1,98 @@
+Studio Leish — Vercel Environment Variables
+==============================================
+Dashboard: https://vercel.com/dashboard → your project → Settings → Environment Variables
+Add each key below. Set Environment to: Production + Preview + Development
+── REQUIRED ──────────────────────────────────────────────────
+Supabase service role key (server-side ONLY — never put in frontend)
+Get from: Supabase Dashboard → Settings → API → service_role key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+Supabase project URL
+SUPABASE_URL=https://kcmoibrqyrzueslaqtgc.supabase.co
+Billplz API key (from Billplz dashboard → API)
+BILLPLZ_API_KEY=your_billplz_api_key_here
+Billplz X-Signature key (from Billplz dashboard → API → X-Signature)
+BILLPLZ_X_SIGNATURE_KEY=your_x_signature_key_here
+Your production site URL (used in callback redirects)
+SITE_URL=https://leish.my/studio
+── OPTIONAL BUT RECOMMENDED ──────────────────────────────────
+Billplz Collection ID (the payment collection your bills belong to)
+BILLPLZ_COLLECTION_ID=your_collection_id_here
+Node environment
+NODE_ENV=production
+══════════════════════════════════════════════════════════════
+HOW TO ADD THESE IN VERCEL (step by step)
+══════════════════════════════════════════════════════════════
+
+1. Go to https://vercel.com/dashboard
+2. Click your Studio Leish project
+3. Click “Settings” tab (top nav)
+4. Click “Environment Variables” (left sidebar)
+5. For each variable above:
+a. Type the KEY name (e.g. SUPABASE_SERVICE_ROLE_KEY)
+b. Paste the VALUE
+c. Check all 3 environments: Production ✓  Preview ✓  Development ✓
+d. Click “Save”
+6. After adding all variables → go to “Deployments” tab
+7. Click the 3-dot menu on your latest deployment → “Redeploy”
+(env vars only take effect on new deployments)
+
+
+══════════════════════════════════════════════════════════════
+WHERE TO FIND EACH VALUE
+══════════════════════════════════════════════════════════════
+
+SUPABASE_SERVICE_ROLE_KEY
+→ supabase.com → your project → Settings → API
+→ Under “Project API keys” → “service_role” → Reveal → Copy
+⚠️  NEVER paste this into any frontend HTML file
+
+BILLPLZ_API_KEY
+→ billplz.com → Log in → Settings → API
+→ Copy the API Key shown
+
+BILLPLZ_X_SIGNATURE_KEY
+→ billplz.com → Settings → API
+→ Scroll to “X Signature Key” section
+→ Copy the key (or generate one if not set)
+→ Also paste this same key into Billplz’s callback URL settings
+
+BILLPLZ_COLLECTION_ID
+→ billplz.com → Collections → your active collection
+→ The ID is in the URL: billplz.com/en/collections/XXXXXXXX
+
+SITE_URL
+→ This is your production domain: https://leish.my/studio
+→ Used in billplz-callback.js to redirect after payment
+
+
+══════════════════════════════════════════════════════════════
+VERCEL CLI (alternative — run from your project folder)
+══════════════════════════════════════════════════════════════
+
+Install CLI:  npm i -g vercel
+Login:        vercel login
+
+Add each var:
+vercel env add SUPABASE_SERVICE_ROLE_KEY
+vercel env add BILLPLZ_API_KEY
+vercel env add BILLPLZ_X_SIGNATURE_KEY
+vercel env add BILLPLZ_COLLECTION_ID
+vercel env add SITE_URL
+
+Pull to local .env file (for local dev):
+vercel env pull .env.local
+
+⚠️  Add .env.local to your .gitignore — never commit it to GitHub
+
+
+══════════════════════════════════════════════════════════════
+SECURITY CHECKLIST
+══════════════════════════════════════════════════════════════
+
+[ ] SUPABASE_SERVICE_ROLE_KEY is ONLY in Vercel env vars
+[ ] SUPABASE_SERVICE_ROLE_KEY does NOT appear in any .html file
+[ ] Supabase anon key in admin.html is fine (it’s public by design)
+[ ] RLS policies are enabled on all tables (run rls-policies.sql)
+[ ] .env.local is in .gitignore
+[ ] create-admin.html is DELETED from your repo
+[ ] Billplz X-Signature key matches in both Vercel + Billplz dashboard
