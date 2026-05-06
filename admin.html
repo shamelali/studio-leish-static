@@ -373,21 +373,21 @@
         // Debug logging
         console.log('Admin page loading...');
 
-        const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
+        const _supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
+        const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
 
-        const supabaseLib = window.supabase || window.Supabase || window._supabase;
+        const _supabaseLib = window.supabase || window.Supabase || window._supabase;
 
-        if (!supabaseLib) {
+        if (!_supabaseLib) {
             document.getElementById('login-error').textContent = 'Error: Supabase library not loaded. Check your internet connection.';
             console.error('Supabase not loaded!');
         } else {
             console.log('Supabase library loaded successfully');
         }
 
-        let supabase;
+        let _supabaseClient;
         try {
-            supabase = supabaseLib.createClient(supabaseUrl, supabaseKey);
+            _supabaseClient = _supabaseLib.createClient(_supabaseUrl, _supabaseKey);
             console.log('Supabase client initialized');
         } catch (e) {
             console.error('Failed to init Supabase:', e);
@@ -399,9 +399,9 @@
 
         // Check if already logged in
         (async function() {
-            if (!supabase) return;
+            if (!_supabaseClient) return;
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session } } = await _supabaseClient.auth.getSession();
                 console.log('Session check:', session ? 'logged in' : 'not logged in');
                 if (session) showDashboard();
             } catch (e) {
@@ -422,7 +422,7 @@
                 return;
             }
 
-            if (!supabase) {
+            if (!_supabaseClient) {
                 errorDiv.textContent = 'Error: Database not connected. Please refresh and try again.';
                 return;
             }
@@ -436,7 +436,7 @@
             console.log('Attempting login for:', email);
 
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                const { data, error } = await _supabaseClient.auth.signInWithPassword({ email, password });
 
                 if (error) {
                     loginBtn.textContent = 'Sign In';
@@ -460,14 +460,14 @@
         }
 
         function logout() {
-            supabase.auth.signOut();
+            _supabaseClient.auth.signOut();
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('login-form').style.display = 'block';
         }
 
         async function saveLogo() {
             const logoValue = document.getElementById('logo-input').value;
-            const { error } = await supabase
+            const { error } = await _supabaseClient
                 .from('site_settings')
                 .upsert({ key: 'logo', value: logoValue }, { onConflict: 'key' });
             
@@ -489,7 +489,7 @@
             document.getElementById('bookings-table').style.display = 'none';
             document.getElementById('empty-state').style.display = 'none';
 
-            const { data, error } = await supabase
+            const { data, error } = await _supabaseClient
                 .from('bookings')
                 .select('*')
                 .order('createdAt', { ascending: false })
@@ -657,7 +657,7 @@
                 return;
             }
 
-            const { error } = await supabase
+            const { error } = await _supabaseClient
                 .from('bookings')
                 .update(updatedData)
                 .eq('booking_id', currentBookingId);
@@ -679,7 +679,7 @@
                 return;
             }
 
-            const { error } = await supabase
+            const { error } = await _supabaseClient
                 .from('bookings')
                 .delete()
                 .eq('booking_id', currentBookingId);
