@@ -1,6 +1,5 @@
 {
-  "version": 2,
-  "buildCommand": null,
-  "outputDirectory": ".",
-  "framework": null
+  "rewrites": [
+    { "source": "/api/email-webhook", "destination": "/api/email-webhook.js" }
+  ]
 }

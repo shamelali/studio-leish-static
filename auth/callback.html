@@ -45,17 +45,23 @@
         const supabaseLib = window.supabase || window.Supabase || window._supabase;
         const supabase = supabaseLib ? supabaseLib.createClient(supabaseUrl, supabaseKey) : null;
 
-        // Get redirect URL from params (passed from user.html)
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectUrl = urlParams.get('redirect') || 'user-dashboard.html';
-
         // Handle the OAuth callback
         supabase.auth.onAuthStateChange((event, session) => {
             if (session) {
                 // Successfully signed in - store auth completion flag
                 sessionStorage.setItem('authCompleted', 'true');
-                const targetUrl = redirectUrl + (redirectUrl.includes('?') ? '&' : '?') + 'restored=true';
-                window.location.href = targetUrl;
+
+                // Check if user has a pending booking
+                const pendingBooking = sessionStorage.getItem('pendingBooking');
+
+                if (pendingBooking) {
+                    // User was in the middle of booking - redirect to payment page
+                    sessionStorage.removeItem('pendingBooking');
+                    window.location.href = 'book.html?restored=true';
+                } else {
+                    // No booking in progress - redirect to landing page
+                    window.location.href = 'index.html';
+                }
             }
         });
 
@@ -64,10 +70,20 @@
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 sessionStorage.setItem('authCompleted', 'true');
-                const targetUrl = redirectUrl + (redirectUrl.includes('?') ? '&' : '?') + 'restored=true';
-                window.location.href = targetUrl;
+
+                // Check if user has a pending booking
+                const pendingBooking = sessionStorage.getItem('pendingBooking');
+
+                if (pendingBooking) {
+                    // User was in the middle of booking - redirect to payment page
+                    sessionStorage.removeItem('pendingBooking');
+                    window.location.href = 'book.html?restored=true';
+                } else {
+                    // No booking in progress - redirect to landing page
+                    window.location.href = 'index.html';
+                }
             } else {
-                window.location.href = '/user.html?error=auth_failed&redirect=' + encodeURIComponent(redirectUrl);
+                window.location.href = '/user.html?error=auth_failed';
             }
         }, 3000);
     </script>

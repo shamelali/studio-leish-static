@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Setup Checklist | Studio Leish</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: #0f0f1a; color: #eaeaea; min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #eaeaea, #e94560); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card { background: #16213e; border: 1px solid #2a2a4a; border-radius: 16px; padding: 30px; margin-bottom: 20px; }
+        h2 { font-size: 1.5rem; margin-bottom: 20px; color: #e94560; }
+        h3 { font-size: 1.2rem; margin-bottom: 15px; margin-top: 25px; }
+        .step { background: #1a1a2e; border-left: 4px solid #e94560; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        .step-number { display: inline-block; width: 32px; height: 32px; background: #e94560; color: white; border-radius: 50%; text-align: center; line-height: 32px; margin-right: 10px; font-weight: 700; }
+        .checklist { list-style: none; }
+        .checklist li { padding: 10px 0; border-bottom: 1px solid #2a2a4a; }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist input[type="checkbox"] { margin-right: 10px; transform: scale(1.2); }
+        .btn { padding: 12px 24px; background: #e94560; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; margin: 5px; }
+        .btn:hover { opacity: 0.9; }
+        .btn.secondary { background: #16213e; border: 2px solid #2a2a4a; }
+        .code { background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 8px; padding: 16px; font-family: monospace; font-size: 13px; margin: 10px 0; overflow-x: auto; }
+        .success { color: #00d9a5; }
+        .warning { color: #f4d03f; }
+        .email-list { background: #1a1a2e; border-radius: 8px; padding: 15px; margin: 10px 0; }
+        .email-item { padding: 8px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Studio Leish</div>
+            <p style="color: #8892b0;">Cloudflare Email Routing Setup</p>
+        </div>
+
+        <div class="card">
+            <h2>📧 Setup Checklist</h2>
+            
+            <div class="step">
+                <h3><span class="step-number">1</span> Open Cloudflare Dashboard</h3>
+                <p style="color: #8892b0; margin-bottom: 15px;">Click the button below to open your Cloudflare dashboard:</p>
+                <a href="https://dash.cloudflare.com" class="btn" target="_blank">Open Cloudflare →</a>
+                <p style="color: #8892b0; margin-top: 15px;">Login and select <strong>leish.my</strong> site</p>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">2</span> Enable Email Routing</h3>
+                <ul class="checklist">
+                    <li><input type="checkbox" id="step1"> Navigate to <strong>Email</strong> → <strong>Email Routing</strong> (left sidebar)</li>
+                    <li><input type="checkbox" id="step2"> Click <strong>"Enable Email Routing"</strong> button</li>
+                    <li><input type="checkbox" id="step3"> Click <strong>"Get started"</strong> if prompted</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">3</span> Add Destination Address</h3>
+                <p style="color: #8892b0; margin-bottom: 15px;">This is where forwarded emails will go:</p>
+                <div class="code">leishstudio.main@gmail.com</div>
+                <ul class="checklist">
+                    <li><input type="checkbox" id="step4"> Go to <strong>Destination addresses</strong> tab</li>
+                    <li><input type="checkbox" id="step5"> Click <strong>"Add destination address"</strong></li>
+                    <li><input type="checkbox" id="step6"> Enter: <code>leishstudio.main@gmail.com</code></li>
+                    <li><input type="checkbox" id="step7"> Check inbox and click verification link</li>
+                </ul>
+                <p class="warning" style="margin-top: 10px;">⚠️ You MUST verify this email before proceeding</p>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">4</span> Create Email Routes</h3>
+                <p style="color: #8892b0; margin-bottom: 15px;">Go to <strong>Routes</strong> tab and add these:</p>
+                
+                <div class="email-list">
+                    <div class="email-item">✉️ hello@leish.my → leishstudio.main@gmail.com</div>
+                    <div class="email-item">✉️ bookings@leish.my → leishstudio.main@gmail.com</div>
+                    <div class="email-item">✉️ studio@leish.my → leishstudio.main@gmail.com</div>
+                    <div class="email-item">✉️ admin@leish.my → leishstudio.main@gmail.com</div>
+                </div>
+
+                <ul class="checklist">
+                    <li><input type="checkbox" id="step8"> Click <strong>"Catch-all address"</strong> tab</li>
+                    <li><input type="checkbox" id="step9"> Enable catch-all → Forward to <code>leishstudio.main@gmail.com</code></li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">5</span> Verify Setup</h3>
+                <p style="color: #8892b0; margin-bottom: 15px;">After completing above, send test emails to:</p>
+                <div class="code">
+                    echo "Test" | mail -s "Test hello" hello@leish.my
+                    # Or just send from your personal email
+                </div>
+                <p style="color: #8892b0;">Check <code>leishstudio.main@gmail.com</code> inbox - emails should arrive within 5 minutes.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>✅ Quick Links</h2>
+            <a href="https://dash.cloudflare.com" class="btn" target="_blank">Cloudflare Dashboard</a>
+            <a href="https://mail.google.com" class="btn secondary" target="_blank">Gmail Inbox</a>
+            <a href="#" class="btn secondary" onclick="window.print()">Print Checklist</a>
+        </div>
+
+        <div class="card">
+            <h2>📊 DNS Status</h2>
+            <p style="color: #8892b0; margin-bottom: 15px;">Your MX records are already configured:</p>
+            <div class="code">
+Type: MX
+Name: @
+Content: route1.mx.cloudflare.net
+Priority: 18
+
+Type: MX
+Name: @
+Content: route2.mx.cloudflare.net
+Priority: 48
+
+Type: MX
+Name: @
+Content: route3.mx.cloudflare.net
+Priority: 82
+            </div>
+            <p class="success">✅ No DNS changes needed - Cloudflare handles this automatically</p>
+        </div>
+
+        <div style="text-align: center; color: #8892b0; margin-top: 30px; font-size: 14px;">
+            Studio Leish | leish.my | Email Routing via Cloudflare
+        </div>
+    </div>
+
+    <script>
+        // Save checkbox state to localStorage
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = localStorage.getItem(checkbox.id) === 'true';
+            checkbox.addEventListener('change', () => {
+                localStorage.setItem(checkbox.id, checkbox.checked);
+            });
+        });
+    </script>
+</body>
+</html>

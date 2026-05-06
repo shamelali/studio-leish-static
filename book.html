@@ -343,13 +343,14 @@
         <button class="back-btn" id="back-home-btn"><i class="fas fa-arrow-left"></i> Back to Home</button>
     </div>
  
-    <!-- Progress Bar — 5 steps -->
+    <!-- Progress Bar — 6 steps -->
     <div class="progress-bar" id="progress-bar">
         <div class="progress-step active" data-step="1">1<span class="step-label">Room</span></div>
-        <div class="progress-step" data-step="2">2<span class="step-label">Date & Time</span></div>
-        <div class="progress-step" data-step="3">3<span class="step-label">Add-ons</span></div>
-        <div class="progress-step" data-step="4">4<span class="step-label">Details</span></div>
-        <div class="progress-step" data-step="5">5<span class="step-label">Confirm</span></div>
+        <div class="progress-step" data-step="2">2<span class="step-label">Details</span></div>
+        <div class="progress-step" data-step="3">3<span class="step-label">Date & Time</span></div>
+        <div class="progress-step" data-step="4">4<span class="step-label">Add-ons</span></div>
+        <div class="progress-step" data-step="5">5<span class="step-label">Details</span></div>
+        <div class="progress-step" data-step="6">6<span class="step-label">Confirm</span></div>
     </div>
  
     <!-- ── Step 1: Room ───────────────────────────────────────────────── -->
@@ -358,12 +359,6 @@
         <p class="step-subtitle">Select the perfect studio for your creative session</p>
  
         <div class="room-grid">
-            <div class="room-card" data-room="creative-studio" data-price="150">
-                <div class="room-icon"><i class="fas fa-paint-brush"></i></div>
-                <div class="room-name">Creative Studio</div>
-                <div class="room-details">Perfect for photoshoots, content creation, and small events. Includes ring lights and backdrops.</div>
-                <div class="room-price">MYR 150/hr</div>
-            </div>
             <div class="room-card" data-room="makeup-suite" data-price="120">
                 <div class="room-icon"><i class="fas fa-magic"></i></div>
                 <div class="room-name">Makeup Station</div>
@@ -376,6 +371,12 @@
                 <div class="room-details">Spacious area for makeup classes and workshops. Capacity up to 15 students.</div>
                 <div class="room-price">MYR 100/hr</div>
             </div>
+            <div class="room-card" data-room="creative-studio" data-price="150">
+                <div class="room-icon"><i class="fas fa-paint-brush"></i></div>
+                <div class="room-name">Creative Studio</div>
+                <div class="room-details">Perfect for photoshoots, content creation, and small events. Includes ring lights and backdrops.</div>
+                <div class="room-price">MYR 150/hr</div>
+            </div>
         </div>
  
         <div class="button-group">
@@ -383,8 +384,108 @@
             <button class="btn btn-primary" id="step1-next">Continue <i class="fas fa-arrow-right"></i></button>
         </div>
     </div>
- 
-    <!-- ── Step 2: Date & Time Range ─────────────────────────────────── -->
+
+    <!-- ── Step 2: Room Details ─────────────────────────────────────── -->
+    <div class="step-content" id="step-2">
+        <h2 class="step-title">Room Details</h2>
+        <p class="step-subtitle" id="step2-subtitle">Tell us more about how you'll use this space</p>
+
+        <!-- Makeup Station A/B Selection -->
+        <div id="makeup-station-details" style="display:none;">
+            <div style="background: var(--secondary); border: 2px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                <h3 style="margin-bottom: 16px; font-size: 1.1rem;">Select Station</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="station-btn" id="station-a" data-station="A" style="background: var(--primary); border: 2px solid var(--success); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s;">
+                        <div style="font-size: 2rem; margin-bottom: 8px; color: var(--success);">🟢</div>
+                        <div style="font-weight: 600; font-size: 1.1rem;">Station A</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="station-a-status">Available</div>
+                    </div>
+                    <div class="station-btn" id="station-b" data-station="B" style="background: var(--primary); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s;">
+                        <div style="font-size: 2rem; margin-bottom: 8px; color: var(--text-muted);">⚫</div>
+                        <div style="font-weight: 600; font-size: 1.1rem;">Station B</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="station-b-status">Check availability above</div>
+                    </div>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">🟢 Green = Available | ⚫ Red = Booked</p>
+            </div>
+        </div>
+
+        <!-- Classroom Form -->
+        <div id="classroom-details" style="display:none;">
+            <div style="background: var(--secondary); border: 2px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                <div class="form-group">
+                    <label for="class-type">Class Type *</label>
+                    <select id="class-type" style="width: 100%; padding: 12px 16px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 1rem;">
+                        <option value="">Select type...</option>
+                        <option value="private">Private</option>
+                        <option value="group">Group</option>
+                    </select>
+                </div>
+                <div class="form-group" id="pax-group" style="display:none;">
+                    <label for="class-pax">Number of Pax *</label>
+                    <select id="class-pax" style="width: 100%; padding: 12px 16px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 1rem;">
+                        <option value="">Select pax...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="class-refreshments">Refreshments (Max 120 words)</label>
+                    <textarea id="class-refreshments" style="width: 100%; padding: 12px 16px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 1rem; resize: vertical; min-height: 80px;" placeholder="Describe refreshments needed..."></textarea>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;" id="refreshments-count">0/120 words</div>
+                </div>
+                <div class="form-group">
+                    <label for="class-special-request">Special Request (Max 1200 words)</label>
+                    <textarea id="class-special-request" style="width: 100%; padding: 12px 16px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 1rem; resize: vertical; min-height: 100px;" placeholder="Any special requests..."></textarea>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;" id="special-request-count">0/1200 words</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Creative Studio Form -->
+        <div id="creative-details" style="display:none;">
+            <div style="background: var(--secondary); border: 2px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                <div class="form-group">
+                    <label for="usage-type">Usage Type *</label>
+                    <select id="usage-type" style="width: 100%; padding: 12px 16px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 1rem;">
+                        <option value="">Select usage...</option>
+                        <option value="Content Creation">Content Creation</option>
+                        <option value="Photoshoot">Photoshoot</option>
+                        <option value="Small Event">Small Event</option>
+                    </select>
+                </div>
+                <div id="event-details" style="display:none;">
+                    <div class="form-group">
+                        <label for="event-type">Event Type</label>
+                        <select id="event-type" style="width: 100%; padding: 12px 16px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 1rem;">
+                            <option value="">Select event type...</option>
+                            <option value="Birthday">Birthday</option>
+                            <option value="Workshop">Workshop</option>
+                            <option value="Meeting">Meeting</option>
+                            <option value="Launch">Launch</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-pax">Number of Pax (1-10)</label>
+                        <select id="event-pax" style="width: 100%; padding: 12px 16px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 1rem;">
+                            <option value="">Select pax...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="creative-special-request">Special Request (Max 150 words)</label>
+                        <textarea id="creative-special-request" style="width: 100%; padding: 12px 16px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 1rem; resize: vertical; min-height: 80px;" placeholder="Any special requests..."></textarea>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;" id="creative-request-count">0/150 words</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-secondary" id="step2-prev"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn btn-primary" id="step2-next">Continue <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <!-- ── Step 3: Date & Time Range ─────────────────────────────────── -->
     <div class="step-content" id="step-2">
         <h2 class="step-title">Date & Time</h2>
         <p class="step-subtitle">Pick your date, then select a start and end time</p>
@@ -448,8 +549,8 @@
         </div>
     </div>
  
-    <!-- ── Step 3: Add-ons ───────────────────────────────────────────── -->
-    <div class="step-content" id="step-3">
+    <!-- ── Step 4: Add-ons ───────────────────────────────────────────── -->
+    <div class="step-content" id="step-6">
         <h2 class="step-title">Add-ons <span style="font-weight:300;font-size:1.2rem;">(Optional)</span></h2>
         <p class="step-subtitle">Enhance your session with additional equipment</p>
  
@@ -497,13 +598,13 @@
         </div>
  
         <div class="button-group">
-            <button class="btn btn-secondary" id="step3-prev"><i class="fas fa-arrow-left"></i> Back</button>
-            <button class="btn btn-primary" id="step3-next">Continue <i class="fas fa-arrow-right"></i></button>
+            <button class="btn btn-secondary" id="step4-prev"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn btn-primary" id="step4-next">Continue <i class="fas fa-arrow-right"></i></button>
         </div>
     </div>
  
-    <!-- ── Step 4: Details ───────────────────────────────────────────── -->
-    <div class="step-content" id="step-4">
+    <!-- ── Step 5: Details ───────────────────────────────────────────── -->
+    <div class="step-content" id="step-6">
         <h2 class="step-title">Your Details</h2>
         <p class="step-subtitle">We'll send booking confirmation to your email</p>
  
@@ -530,8 +631,8 @@
         </div>
     </div>
  
-    <!-- ── Step 5: Confirm ───────────────────────────────────────────── -->
-    <div class="step-content" id="step-5">
+    <!-- ── Step 6: Confirm ───────────────────────────────────────────── -->
+    <div class="step-content" id="step-6">
         <h2 class="step-title">Confirm Your Booking</h2>
         <p class="step-subtitle">Please review your booking details before confirming</p>
  
@@ -606,6 +707,9 @@ const ALL_HOURS = Array.from({ length: 24 }, (_, i) => {
  
 // ─── State ───────────────────────────────────────────────────────────────────
 const booking = {
+    roomNumber: null,    // 'A' or 'B' for Makeup Station
+    roomDetails: null,   // { classType, paxCount, refreshments, specialRequest } for Classroom
+                        // { usageType, eventType, eventPax, specialRequest } for Creative Studio
     room: null,         // { name, pricePerHour }
     date: null,         // 'YYYY-MM-DD'
     startTime: null,    // '9:00 AM'
@@ -788,7 +892,7 @@ function goToStep(n) {
     document.querySelector(`#step-${currentStep}`).classList.add('active');
     document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
  
-    if (currentStep === 5) buildConfirmSummary();
+    if (currentStep === 6) buildConfirmSummary();
     window.scrollTo(0, 0);
 }
  
@@ -797,6 +901,14 @@ function validateStep(step) {
         alert('Please select a room'); return false;
     }
     if (step === 2) {
+        // Validate Room Details step
+        const roomName = booking.room?.name;
+        if (roomName === "Makeup Station" if (step === 2) {if (step === 2) { !booking.roomNumber) { alert("Please select a station (A or B)"); return false; }
+        if (roomName === "Classroom" if (step === 2) {if (step === 2) { !document.getElementById("class-type").value) { alert("Please select class type"); return false; }
+        if (roomName === "Creative Studio" if (step === 2) {if (step === 2) { !document.getElementById("usage-type").value) { alert("Please select usage type"); return false; }
+        return true;
+    }
+    if (step === 3) {
         if (!booking.date) { alert('Please select a date'); return false; }
         if (!booking.startTime) { alert('Please select a start time'); return false; }
         if (timeMode === 'range' && !booking.endTime) { alert('Please select an end time'); return false; }
@@ -1022,5 +1134,6 @@ if (urlParams.get('restored') === 'true' && sessionStorage.getItem('authComplete
     if (time) { setTimeout(() => { document.querySelectorAll('.time-slot').forEach(s => { if (s.textContent.trim() === time) s.click(); }); }, 50); }
 })();
 </script>
+<script src="booking-details.js"></script>
 </body>
 </html>

@@ -141,7 +141,6 @@
             // Check for Google OAuth auth param (base64 encoded user info)
             const urlParams = new URLSearchParams(window.location.search);
             const authParam = urlParams.get('auth');
-            const justSignedIn = authParam || sessionStorage.getItem('authCompleted');
 
             if (authParam) {
                 try {
@@ -151,13 +150,6 @@
                         name: userInfo.name || userInfo.given_name + ' ' + userInfo.family_name
                     };
                     isGoogleAuth = true;
-
-                    // If just signed in, check booking state for redirect
-                    if (justSignedIn) {
-                        handlePostSignInRedirect(currentUser.email);
-                        return;
-                    }
-
                     document.getElementById('user-name').textContent = `Welcome back, ${currentUser.name}!`;
                     loadBookings(currentUser.email);
                     return;
@@ -175,13 +167,6 @@
 
             currentUser = session.user;
 
-            // If just signed in, check booking state for redirect
-            if (justSignedIn) {
-                sessionStorage.removeItem('authCompleted');
-                handlePostSignInRedirect(session.user.email);
-                return;
-            }
-
             // Get user details from users table
             const { data: userData } = await supabase
                 .from('users')
@@ -197,21 +182,6 @@
 
             loadBookings(session.user.email);
         })();
-
-        async function handlePostSignInRedirect(userEmail) {
-            // Check if user has a pending booking in sessionStorage
-            const pendingBooking = sessionStorage.getItem('pendingBooking');
-
-            if (pendingBooking) {
-                // User was in the middle of booking - redirect to payment page
-                sessionStorage.removeItem('pendingBooking');
-                window.location.href = 'book.html?restored=true';
-                return;
-            }
-
-            // No booking in progress - redirect to landing page
-            window.location.href = 'index.html';
-        }
 
         async function loadBookings(userEmail) {
             // Fetch bookings and user's reviews in parallel

@@ -140,7 +140,18 @@
  
         function goToDashboard() {
             sessionStorage.setItem('authCompleted', 'true');
-            window.location.href = redirectUrl + (redirectUrl.includes('?') ? '&' : '?') + 'restored=true';
+
+            // Check if user has a pending booking
+            const pendingBooking = sessionStorage.getItem('pendingBooking');
+
+            if (pendingBooking) {
+                // User was in the middle of booking - redirect to payment page
+                sessionStorage.removeItem('pendingBooking');
+                window.location.href = 'book.html?restored=true';
+            } else {
+                // No booking in progress - redirect to landing page
+                window.location.href = 'index.html';
+            }
         }
  
         // Check if already logged in
@@ -233,7 +244,7 @@
             _supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin + '/' + redirectUrl
+                    redirectTo: window.location.origin + '/auth/callback.html'
                 }
             });
         });
