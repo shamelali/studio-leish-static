@@ -59,9 +59,11 @@
 - [x] Billplz API integration (api/billplz-*.js)
 
 **Pending Configuration:**
-- [ ] Run SQL to create Review & push_subscriptions tables
+- [ ] Run SQL to create reviews & push_subscriptions tables (reviews-schema.sql, push-subscription-schema.sql)
 - [x] Enable Google OAuth in Supabase Dashboard ✅
 - [ ] Set BILLPLZ_API_KEY in Vercel environment variables
+- [ ] Configure Google OAuth Client ID/Secret in Vercel
+- [ ] Complete custom domain DNS propagation (studio.leish.my)
 
 ---
 

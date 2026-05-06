@@ -127,13 +127,13 @@
     </div>
  
     <!-- Supabase loaded at END of body — guarantees it's ready before JS runs -->
-<script src="https://cdn.jsdelivr.net/npm/@_supabase/_supabase-js@2?v=20240504"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const __supabaseUrl = 'https://kcmoibrqyrzueslaqtgc._supabase.co';
+        const __supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const __supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
-        
-        const __supabaseLib = window.Supabase || window._supabase;
-        const __supabase = __supabaseLib ? __supabaseLib.createClient(__supabaseUrl, __supabaseKey) : null;
+
+        const __supabaseLib = window.supabase || window.Supabase || window._supabase;
+        const _supabase = __supabaseLib ? __supabaseLib.createClient(__supabaseUrl, __supabaseKey) : null;
  
         const urlParams = new URLSearchParams(window.location.search);
         const redirectUrl = urlParams.get('redirect') || 'user-dashboard.html';
@@ -227,9 +227,15 @@
             }, 3000);
         });
  
-// Google OAuth - redirect to our custom OAuth API
+// Google OAuth - use Supabase's built-in OAuth
         document.getElementById('google-btn').addEventListener('click', function() {
-            window.location.href = '/api/google-oauth?redirect=' + encodeURIComponent(redirectUrl);
+            if (!_supabase) { alert('Supabase not loaded'); return; }
+            _supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/' + redirectUrl
+                }
+            });
         });
   
         // Enter key shortcuts

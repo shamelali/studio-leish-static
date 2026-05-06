@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Bookings | Studio Leish</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My Bookings | Studio Leish</title>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <style>
         :root {
             --primary: #1a1a2e;
             --secondary: #16213e;
@@ -117,10 +118,13 @@
     <script>
         const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
-        const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseLib = window.supabase || window.Supabase || window._supabase;
+        const supabase = supabaseLib ? supabaseLib.createClient(supabaseUrl, supabaseKey) : null;
 
         let currentBookingId = null;
         let currentRating = 0;
+        let currentUser = null;
+        let isGoogleAuth = false;
 
         // Star rating setup
         document.querySelectorAll('.star').forEach(star => {
@@ -134,13 +138,51 @@
         });
 
         (async function() {
+            // Check for Google OAuth auth param (base64 encoded user info)
+            const urlParams = new URLSearchParams(window.location.search);
+            const authParam = urlParams.get('auth');
+            const justSignedIn = authParam || sessionStorage.getItem('authCompleted');
+
+            if (authParam) {
+                try {
+                    const userInfo = JSON.parse(atob(authParam));
+                    currentUser = {
+                        email: userInfo.email,
+                        name: userInfo.name || userInfo.given_name + ' ' + userInfo.family_name
+                    };
+                    isGoogleAuth = true;
+
+                    // If just signed in, check booking state for redirect
+                    if (justSignedIn) {
+                        handlePostSignInRedirect(currentUser.email);
+                        return;
+                    }
+
+                    document.getElementById('user-name').textContent = `Welcome back, ${currentUser.name}!`;
+                    loadBookings(currentUser.email);
+                    return;
+                } catch (e) {
+                    console.error('Failed to parse auth param:', e);
+                }
+            }
+
+            // Fall back to Supabase session
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
                 window.location.href = 'user.html';
                 return;
             }
 
-            // Get user details
+            currentUser = session.user;
+
+            // If just signed in, check booking state for redirect
+            if (justSignedIn) {
+                sessionStorage.removeItem('authCompleted');
+                handlePostSignInRedirect(session.user.email);
+                return;
+            }
+
+            // Get user details from users table
             const { data: userData } = await supabase
                 .from('users')
                 .select('name')
@@ -149,10 +191,27 @@
 
             if (userData) {
                 document.getElementById('user-name').textContent = `Welcome back, ${userData.name}!`;
+            } else {
+                document.getElementById('user-name').textContent = `Welcome back!`;
             }
 
             loadBookings(session.user.email);
         })();
+
+        async function handlePostSignInRedirect(userEmail) {
+            // Check if user has a pending booking in sessionStorage
+            const pendingBooking = sessionStorage.getItem('pendingBooking');
+
+            if (pendingBooking) {
+                // User was in the middle of booking - redirect to payment page
+                sessionStorage.removeItem('pendingBooking');
+                window.location.href = 'book.html?restored=true';
+                return;
+            }
+
+            // No booking in progress - redirect to landing page
+            window.location.href = 'index.html';
+        }
 
         async function loadBookings(userEmail) {
             // Fetch bookings and user's reviews in parallel
@@ -168,7 +227,7 @@
                 return;
             }
 
-            const bookings = bookingsRes.data;
+            const bookings = bookingsRes.data || [];
             const reviewedBookingIds = new Set((reviewsRes.data || []).map(r => r.booking_id));
 
             if (bookings.length === 0) {
@@ -219,13 +278,16 @@
         async function submitReview() {
             if (currentRating === 0) { alert('Please select a rating'); return; }
             const comment = document.getElementById('review-comment').value.trim();
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
+
+            const clientEmail = currentUser ? currentUser.email : null;
+            if (!clientEmail) { alert('User not authenticated'); return; }
+
+            const room = document.querySelector('#review-modal h3').textContent.replace('Write a Review for ', '');
 
             const { error } = await supabase.from('reviews').insert({
                 booking_id: currentBookingId,
-                client_email: session.user.email,
-                room: document.querySelector('#review-modal h3').textContent.replace('Write a Review for ', ''),
+                client_email: clientEmail,
+                room: room,
                 rating: currentRating,
                 comment: comment || null
             });
@@ -233,11 +295,20 @@
             if (error) { alert('Error submitting review: ' + error.message); return; }
             alert('Review submitted successfully!');
             closeReviewModal();
-            loadBookings(session.user.email);
+            loadBookings(clientEmail);
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            try {
+                if (isGoogleAuth) {
+                    // For Google OAuth users, redirect without auth param
+                    window.location.href = 'user.html';
+                    return;
+                }
+                await supabase.auth.signOut();
+            } catch (e) {
+                console.error('Logout error:', e);
+            }
             window.location.href = 'user.html';
         }
     </script>

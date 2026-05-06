@@ -50,15 +50,20 @@
 
 ---
 
-## 📋 Remaining Tasks (Phase 6 - Advanced Features)
-- [ ] Review/rating system
-- [ ] Analytics dashboard (advanced)
-- [ ] Custom domain setup (studio.leish.my)
-- [ ] PWA (Progressive Web App) capabilities
-- [ ] Push notifications
-- [ ] Google OAuth integration
-- [ ] Billplz API key configuration (set in Vercel env)
-- [ ] Set up actual Billplz account and test payment flow
+## ✅ Completed (Phase 6 - Advanced Features)
+- [x] Review/rating system (reviews.html, submit-review.html, api/submit-review.js)
+- [x] Analytics dashboard (admin-enhanced.html)
+- [x] Custom domain setup (domain-setup.html, setup-domain.sh)
+- [x] PWA capabilities (sw.js, manifest.json)
+- [x] Push notifications (api/push-subscribe.js)
+- [x] Google OAuth integration (api/google-oauth.js, google-oauth-setup.html)
+- [x] Billplz API integration (api/billplz-create-bill.js, api/billplz-callback.js)
+
+**Pending Configuration:**
+- [ ] Run SQL to create reviews & push_subscriptions tables
+- [ ] Set BILLPLZ_API_KEY in Vercel environment variables
+- [ ] Configure Google OAuth Client ID/Secret in Vercel
+- [ ] Complete custom domain DNS propagation (studio.leish.my)
 
 ---
 

@@ -29,14 +29,16 @@
         
         async function test() {
             log('Starting Supabase test...');
-            
-            if (!window.Supabase) {
+
+            const supabaseLib = window.supabase || window.Supabase || window._supabase;
+
+            if (!supabaseLib) {
                 log('ERROR: Supabase library not loaded', 'error');
                 return;
             }
             log('Supabase library loaded', 'success');
-            
-            const supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+
+            const supabase = supabaseLib.createClient(supabaseUrl, supabaseKey);
             log('Supabase client created', 'success');
             
             // Test 1: Check auth

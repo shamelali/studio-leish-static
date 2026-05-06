@@ -1352,7 +1352,7 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
         
         // Handle both v1 and v2 CDN global names
-        const lib = window.Supabase || window.supabase;
+        const lib = window.supabase || window.Supabase || window._supabase;
         if (!lib) {
             console.error('Supabase library not loaded');
         }

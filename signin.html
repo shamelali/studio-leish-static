@@ -60,17 +60,23 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=20240504"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Using unique var name to avoid conflicts
         const _supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
-        
-        const _supabaseLib = window.Supabase || window.supabase;
+
+        const _supabaseLib = window.supabase || window.Supabase || window._supabase;
         const _supabase = _supabaseLib ? _supabaseLib.createClient(_supabaseUrl, _supabaseKey) : null;
 
         function _signInWithGoogle() {
-            window.location.href = '/api/google-oauth';
+            if (!_supabase) { alert('Supabase not loaded'); return; }
+            _supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: 'https://studio.leish.my/user-dashboard.html'
+                }
+            });
         }
 
         if (_supabase) {

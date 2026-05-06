@@ -242,4 +242,4 @@ The booking flow uses a step-by-step wizard that adapts to smaller screens with 
 
 ---
 
-*Last Updated: May 2026*
+*Last Updated: May 6, 2026*

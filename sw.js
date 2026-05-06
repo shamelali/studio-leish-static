@@ -1,5 +1,5 @@
 // Service Worker for Studio Leish PWA
-const CACHE_NAME = 'studio-leish-v2';
+const CACHE_NAME = 'studio-leish-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -51,7 +51,7 @@ self.addEventListener('fetch', event => {
   }
 
   // Don't cache API/Auth requests - pass through directly
-  if (url.pathname.startsWith('/auth/') || url.hostname.includes('supabase.co') || url.hostname.includes('googleapis') || url.hostname.includes('google.com')) {
+  if (url.pathname.startsWith('/auth/') || url.hostname.includes('supabase.co') || url.hostname.includes('googleapis') || url.hostname.includes('google.com') || url.hostname.includes('jsdelivr.net')) {
     event.respondWith(fetch(event.request));
     return;
   }

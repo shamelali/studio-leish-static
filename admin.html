@@ -372,21 +372,22 @@
     <script>
         // Debug logging
         console.log('Admin page loading...');
-        
-        // Check Supabase is loaded
-        if (!window.Supabase) {
+
+        const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
+
+        const supabaseLib = window.supabase || window.Supabase || window._supabase;
+
+        if (!supabaseLib) {
             document.getElementById('login-error').textContent = 'Error: Supabase library not loaded. Check your internet connection.';
             console.error('Supabase not loaded!');
         } else {
             console.log('Supabase library loaded successfully');
         }
 
-        const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
-        
         let supabase;
         try {
-            supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+            supabase = supabaseLib.createClient(supabaseUrl, supabaseKey);
             console.log('Supabase client initialized');
         } catch (e) {
             console.error('Failed to init Supabase:', e);

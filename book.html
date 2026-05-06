@@ -620,7 +620,7 @@ let timeMode = 'range'; // 'range' | 'single'
 let pickingEnd = false;  // range mode state: false = picking start, true = picking end
  
 // ─── Supabase ────────────────────────────────────────────────────────────────
-const lib = window.supabase || window.Supabase;
+const lib = window.supabase || window.Supabase || window._supabase;
 const supabaseClient = lib ? lib.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
  
 // ─── Flatpickr ───────────────────────────────────────────────────────────────
