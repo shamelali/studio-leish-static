@@ -1,6 +1,12 @@
 -- SQL Migration for Studio Leish Booking Updates
 -- Run this in Supabase Dashboard → SQL Editor
--- https://supabase.com/dashboard/project/kcmoibrqyrzueslaqtgc/sql
+-- https://supabase.com/dashboard/project/kcmoibrqyrzueslaqtgc/sql/
+
+-- First, check existing columns
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_name = 'bookings' 
+ORDER BY ordinal_position;
 
 -- Add new columns to bookings table
 ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS room_number TEXT;
@@ -14,17 +20,12 @@ ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS event_pax INTEGER;
 ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS special_request_creative TEXT;
 
 -- Backfill past Makeup Station bookings to Station A (default)
+-- Note: column is named 'room' in your schema, not 'room_name'
 UPDATE public.bookings 
 SET room_number = 'A' 
 WHERE room = 'Makeup Station' AND room_number IS NULL;
 
 -- Verify the changes
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'bookings' 
-ORDER BY ordinal_position;
-
--- Show sample data
 SELECT booking_id, room, room_number, class_type, usage_type 
 FROM public.bookings 
 LIMIT 5;
