@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Your Session | Leish Studio</title>
@@ -343,13 +344,14 @@
         <button class="back-btn" id="back-home-btn"><i class="fas fa-arrow-left"></i> Back to Home</button>
     </div>
  
-    <!-- Progress Bar — 5 steps -->
+    <!-- Progress Bar — 6 steps -->
     <div class="progress-bar" id="progress-bar">
         <div class="progress-step active" data-step="1">1<span class="step-label">Room</span></div>
         <div class="progress-step" data-step="2">2<span class="step-label">Date & Time</span></div>
         <div class="progress-step" data-step="3">3<span class="step-label">Add-ons</span></div>
         <div class="progress-step" data-step="4">4<span class="step-label">Details</span></div>
         <div class="progress-step" data-step="5">5<span class="step-label">Confirm</span></div>
+        <div class="progress-step" data-step="6">6<span class="step-label">Payment</span></div>
     </div>
  
     <!-- ── Step 1: Room ───────────────────────────────────────────────── -->
@@ -571,7 +573,42 @@
             <button class="btn btn-primary" id="confirm-btn">Confirm Booking <i class="fas fa-check"></i></button>
         </div>
     </div>
- 
+
+    <!-- ── Step 6: Payment ──────────────────────────────────────────── -->
+    <div class="step-content" id="step-6">
+        <h2 class="step-title">Complete Payment</h2>
+        <p class="step-subtitle">You will be redirected to Billplz to complete your payment</p>
+
+        <div class="confirmation-summary">
+            <div class="summary-item">
+                <span class="summary-label">Studio</span>
+                <span class="summary-value" id="pay-room">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Date</span>
+                <span class="summary-value" id="pay-date">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Time</span>
+                <span class="summary-value" id="pay-time">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Total Amount</span>
+                <span class="summary-value" id="pay-total">MYR 0</span>
+            </div>
+        </div>
+
+        <div style="background: var(--secondary); border: 2px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <i class="fas fa-lock" style="font-size: 2rem; color: var(--success); margin-bottom: 12px; display: block;"></i>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Your payment is secured by Billplz. You can pay using FPX, credit card, or other methods.</p>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-secondary" id="step6-prev"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn btn-primary" id="pay-now-btn">Proceed to Payment <i class="fas fa-credit-card"></i></button>
+        </div>
+    </div>
+
     <!-- ── Success ───────────────────────────────────────────────────── -->
     <div class="step-content" id="step-success" style="text-align:center;padding:60px 20px;">
         <div class="success-icon"><i class="fas fa-check-circle"></i></div>
@@ -615,6 +652,7 @@ const booking = {
     addons: [],
     client: {}
 };
+let currentBookingId = null; // Store booking ID for payment step
  
 let currentStep = 1;
 let timeMode = 'range'; // 'range' | 'single'
@@ -802,9 +840,29 @@ function goToStep(n) {
     currentStep = n;
     document.querySelector(`#step-${currentStep}`).classList.add('active');
     document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
- 
+
+    if (currentStep === 4) autoPopulateDetails();
     if (currentStep === 5) buildConfirmSummary();
+    if (currentStep === 6) buildPaymentSummary();
     window.scrollTo(0, 0);
+}
+
+function autoPopulateDetails() {
+    const profileStr = sessionStorage.getItem('userProfile');
+    if (!profileStr) return;
+
+    try {
+        const profile = JSON.parse(profileStr);
+        if (profile.name && !document.getElementById('client-name').value) {
+            document.getElementById('client-name').value = profile.name;
+        }
+        if (profile.email && !document.getElementById('client-email').value) {
+            document.getElementById('client-email').value = profile.email;
+        }
+        if (profile.phone && !document.getElementById('client-phone').value) {
+            document.getElementById('client-phone').value = profile.phone;
+        }
+    } catch(e) { console.warn('Auto-populate:', e.message); }
 }
  
 function validateStep(step) {
@@ -868,6 +926,8 @@ document.getElementById('step4-prev').addEventListener('click', () => goToStep(3
 document.getElementById('step4-next').addEventListener('click', handleNext);
 document.getElementById('step5-prev').addEventListener('click', () => goToStep(4));
 document.getElementById('confirm-btn').addEventListener('click', confirmBooking);
+document.getElementById("step6-prev").addEventListener("click", () => goToStep(5));
+document.getElementById("pay-now-btn").addEventListener("click", proceedToPayment);
  
 // ─── Room Selection ───────────────────────────────────────────────────────────
 document.querySelectorAll('.room-card').forEach(card => {
@@ -908,7 +968,7 @@ function buildConfirmSummary() {
     const timeStr = timeMode === 'single'
         ? `${booking.startTime} (1 hr)`
         : `${booking.startTime} – ${booking.endTime}`;
- 
+
     document.getElementById('cf-room').textContent     = booking.room?.name || '-';
     document.getElementById('cf-date').textContent     = booking.date || '-';
     document.getElementById('cf-time').textContent     = timeStr;
@@ -917,20 +977,31 @@ function buildConfirmSummary() {
     document.getElementById('cf-client').textContent   = booking.client.name || '-';
     document.getElementById('cf-total').textContent    = `MYR ${calculateTotal()}`;
 }
+
+function buildPaymentSummary() {
+    const timeStr = timeMode === 'single'
+        ? `${booking.startTime} (1 hr)`
+        : `${booking.startTime} – ${booking.endTime}`;
+
+    document.getElementById('pay-room').textContent  = booking.room?.name || '-';
+    document.getElementById('pay-date').textContent  = booking.date || '-';
+    document.getElementById('pay-time').textContent  = timeStr;
+    document.getElementById('pay-total').textContent = `MYR ${calculateTotal()}`;
+}
  
 // ─── Confirm Booking ──────────────────────────────────────────────────────────
 async function confirmBooking() {
     const btn = document.getElementById('confirm-btn');
     btn.disabled = true;
     btn.innerHTML = 'Processing… <i class="fas fa-spinner fa-spin"></i>';
- 
-    const bookingId = 'LEISH-' + Date.now().toString().slice(-8);
+
+    currentBookingId = 'LEISH-' + Date.now().toString().slice(-8);
     const timeStr = timeMode === 'single'
         ? `${booking.startTime} (1 hr)`
         : `${booking.startTime} – ${booking.endTime}`;
- 
+
     const bookingData = {
-        booking_id:       bookingId,
+        booking_id:       currentBookingId,
         room:             booking.room?.name,
         room_price:       booking.room?.pricePerHour,
         date:             booking.date,
@@ -945,14 +1016,14 @@ async function confirmBooking() {
         status:           'pending',
         paymentStatus:    'pending'
     };
- 
+
     if (supabaseClient) {
         try {
             const { error } = await supabaseClient.from('bookings').insert([bookingData]);
             if (error) console.warn('Supabase:', error.message);
         } catch(e) { console.warn('Supabase:', e.message); }
     }
- 
+
     try {
         await fetch('https://api.resend.com/emails', {
             method: 'POST',
@@ -960,10 +1031,10 @@ async function confirmBooking() {
             body: JSON.stringify({
                 from: 'Studio Leish <bookings@leish.my>',
                 to: [booking.client.email],
-                subject: `Booking Confirmed — ${bookingId}`,
+                subject: `Booking Confirmed — ${currentBookingId}`,
                 html: `<h1>Booking Confirmed!</h1><p>Hi ${booking.client.name},</p>
                     <ul>
-                        <li><strong>Booking ID:</strong> ${bookingId}</li>
+                        <li><strong>Booking ID:</strong> ${currentBookingId}</li>
                         <li><strong>Room:</strong> ${booking.room?.name}</li>
                         <li><strong>Date:</strong> ${booking.date}</li>
                         <li><strong>Time:</strong> ${timeStr}</li>
@@ -974,21 +1045,32 @@ async function confirmBooking() {
             })
         });
     } catch(e) { console.warn('Email:', e.message); }
- 
+
+    // Go to payment step
+    goToStep(6);
+    btn.disabled = false;
+    btn.innerHTML = 'Confirm Booking <i class="fas fa-check"></i>';
+}
+
+async function proceedToPayment() {
+    const btn = document.getElementById('pay-now-btn');
+    btn.disabled = true;
+    btn.innerHTML = 'Redirecting… <i class="fas fa-spinner fa-spin"></i>';
+
     try {
         const billRes  = await fetch('/api/billplz-create-bill', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bookingId, amount: calculateTotal(), customerName: booking.client.name, customerEmail: booking.client.email })
+            body: JSON.stringify({ bookingId: currentBookingId, amount: calculateTotal(), customerName: booking.client.name, customerEmail: booking.client.email })
         });
         const billData = await billRes.json();
         if (billData.bill_url) { window.location.href = billData.bill_url; return; }
     } catch(e) { console.warn('Billplz:', e.message); }
- 
-    // Show success
+
+    // Show success (if Billplz fails)
     document.querySelector(`#step-${currentStep}`).classList.remove('active');
     document.getElementById('progress-bar').style.display = 'none';
-    document.getElementById('booking-id-display').textContent = bookingId;
+    document.getElementById('booking-id-display').textContent = currentBookingId;
     document.getElementById('confirm-email').textContent = booking.client.email;
     document.getElementById('step-success').classList.add('active');
 }

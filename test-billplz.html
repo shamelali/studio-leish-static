@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Billplz Payment | Studio Leish</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #1a1a2e;
@@ -22,8 +24,10 @@
 
         .container { max-width: 600px; margin: 0 auto; }
 
-        .header { text-align: center; margin-bottom: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
         .logo { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .back-btn { padding: 10px 20px; background: var(--secondary); border: 1px solid var(--border); border-radius: 50px; color: var(--text); cursor: pointer; transition: all 0.3s ease; }
+        .back-btn:hover { border-color: var(--accent); }
 
         .card {
             background: var(--secondary); border: 1px solid var(--border);
@@ -60,8 +64,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">Studio Leish</div>
-            <p style="color: var(--text-muted);">Billplz Payment Test</p>
+            <div>
+                <div class="logo">Studio Leish</div>
+                <p style="color: var(--text-muted);">Billplz Payment Test</p>
+            </div>
+            <button class="back-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i> Back to Home</button>
         </div>
 
         <div class="card">

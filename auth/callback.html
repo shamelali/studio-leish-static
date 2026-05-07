@@ -45,15 +45,25 @@
         const supabaseLib = window.supabase || window.Supabase || window._supabase;
         const supabase = supabaseLib ? supabaseLib.createClient(supabaseUrl, supabaseKey) : null;
 
+        function saveUserProfile(user) {
+            const profile = {
+                name: user.user_metadata?.name || user.email?.split('@')[0] || '',
+                email: user.email || '',
+                phone: user.user_metadata?.phone || ''
+            };
+            sessionStorage.setItem('userProfile', JSON.stringify(profile));
+        }
+
         // Handle the OAuth callback
         supabase.auth.onAuthStateChange((event, session) => {
             if (session) {
                 // Successfully signed in - store auth completion flag
                 sessionStorage.setItem('authCompleted', 'true');
-
+                if (session.user) saveUserProfile(session.user);
+ 
                 // Check if user has a pending booking
                 const pendingBooking = sessionStorage.getItem('pendingBooking');
-
+ 
                 if (pendingBooking) {
                     // User was in the middle of booking - redirect to payment page
                     sessionStorage.removeItem('pendingBooking');
@@ -70,10 +80,11 @@
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 sessionStorage.setItem('authCompleted', 'true');
-
+                if (session.user) saveUserProfile(session.user);
+ 
                 // Check if user has a pending booking
                 const pendingBooking = sessionStorage.getItem('pendingBooking');
-
+ 
                 if (pendingBooking) {
                     // User was in the middle of booking - redirect to payment page
                     sessionStorage.removeItem('pendingBooking');

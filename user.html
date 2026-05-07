@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Login | Studio Leish</title>
@@ -138,12 +139,27 @@
         const urlParams = new URLSearchParams(window.location.search);
         const redirectUrl = urlParams.get('redirect') || 'user-dashboard.html';
  
-        function goToDashboard() {
+        function saveUserProfile(user) {
+            const profile = {
+                name: user.user_metadata?.name || user.email?.split('@')[0] || '',
+                email: user.email || '',
+                phone: user.user_metadata?.phone || ''
+            };
+            sessionStorage.setItem('userProfile', JSON.stringify(profile));
+        }
+
+        async function goToDashboard() {
             sessionStorage.setItem('authCompleted', 'true');
+
+            // Save user profile
+            try {
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (user) saveUserProfile(user);
+            } catch(e) { console.warn('Get user:', e.message); }
 
             // Check if user has a pending booking
             const pendingBooking = sessionStorage.getItem('pendingBooking');
-
+ 
             if (pendingBooking) {
                 // User was in the middle of booking - redirect to payment page
                 sessionStorage.removeItem('pendingBooking');
@@ -193,12 +209,13 @@
             this.textContent = 'Signing in…';
             errorDiv.textContent = '';
  
-            const { error } = await _supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
  
             this.disabled = false;
             this.textContent = 'Sign In';
  
             if (error) { errorDiv.textContent = error.message; return; }
+            if (data.user) saveUserProfile(data.user);
             goToDashboard();
         });
  
