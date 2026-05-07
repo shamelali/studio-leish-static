@@ -6,3 +6,4 @@ types/
 app/
 utils/
 middleware.ts
+.env*.local

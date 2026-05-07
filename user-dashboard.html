@@ -90,8 +90,8 @@
         <div class="bookings-list" id="bookings-list" style="display: none;"></div>
 
         <div class="empty-state" id="empty-state" style="display: none;">
-            <i class="fas fa-calendar-times"></i>
-            <p>You don't have any bookings yet.</p>
+            <i class="fas fa-calendar-check"></i>
+            <p>No upcoming bookings.</p>
             <button class="btn" onclick="window.location.href='book.html'">Book a Session</button>
         </div>
     </div>
@@ -137,21 +137,27 @@
             });
         });
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const authParam = urlParams.get('auth');
+
+        if (authParam) {
+            try {
+                const googleUser = JSON.parse(atob(authParam));
+                sessionStorage.setItem('googleUser', JSON.stringify(googleUser));
+            } catch (e) {
+                console.warn('Failed to parse auth param:', e);
+            }
+        }
+
         (async function() {
             // Check for Google OAuth auth param (base64 encoded user info)
-            const urlParams = new URLSearchParams(window.location.search);
-            const authParam = urlParams.get('auth');
-
             if (authParam) {
                 try {
                     const userInfo = JSON.parse(atob(authParam));
-                    currentUser = {
-                        email: userInfo.email,
-                        name: userInfo.name || userInfo.given_name + ' ' + userInfo.family_name
-                    };
-                    isGoogleAuth = true;
-                    document.getElementById('user-name').textContent = `Welcome back, ${currentUser.name}!`;
-                    loadBookings(currentUser.email);
+                    const email = userInfo.email;
+                    const name = userInfo.name || userInfo.given_name + ' ' + userInfo.family_name;
+                    document.getElementById('user-name').textContent = `Welcome back, ${name}!`;
+                    loadBookings(email);
                     return;
                 } catch (e) {
                     console.error('Failed to parse auth param:', e);
@@ -164,8 +170,6 @@
                 window.location.href = 'user.html';
                 return;
             }
-
-            currentUser = session.user;
 
             // Get user details from users table
             const { data: userData } = await supabase
@@ -184,7 +188,6 @@
         })();
 
         async function loadBookings(userEmail) {
-            // Fetch bookings and user's reviews in parallel
             const [bookingsRes, reviewsRes] = await Promise.all([
                 supabase.from('bookings').select('*').eq('clientEmail', userEmail).order('date', { ascending: true }),
                 supabase.from('reviews').select('booking_id').eq('client_email', userEmail)
@@ -200,15 +203,19 @@
             const bookings = bookingsRes.data || [];
             const reviewedBookingIds = new Set((reviewsRes.data || []).map(r => r.booking_id));
 
-            if (bookings.length === 0) {
-                document.getElementById('empty-state').style.display = 'block';
+            const activeBookings = bookings.filter(b =>
+                b.status === 'pending' || b.status === 'confirmed'
+            );
+
+            if (activeBookings.length === 0) {
+                window.location.href = 'index.html';
                 return;
             }
 
             const list = document.getElementById('bookings-list');
             list.style.display = 'grid';
 
-            bookings.forEach(booking => {
+            activeBookings.forEach(booking => {
                 const card = document.createElement('div');
                 card.className = 'booking-card';
                 const hasReviewed = reviewedBookingIds.has(booking.id);

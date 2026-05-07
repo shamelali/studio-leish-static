@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
-    "@getbrevo/brevo": "^5.0.0",
-    "@supabase/supabase-js": "^2.0.0"
+    "@getbrevo/brevo": "^5.0.0"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.105.3",
+    "supabase": "^2.98.2",
+    "vercel": "^53.2.0",
+    "wrangler": "^4.88.0"
   }
 }

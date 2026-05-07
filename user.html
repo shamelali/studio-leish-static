@@ -129,11 +129,11 @@
     <!-- Supabase loaded at END of body — guarantees it's ready before JS runs -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const __supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
-        const __supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
+        const _supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
+        const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
 
-        const __supabaseLib = window.supabase || window.Supabase || window._supabase;
-        const _supabase = __supabaseLib ? __supabaseLib.createClient(__supabaseUrl, __supabaseKey) : null;
+        const _supabaseLib = window.supabase || window.Supabase;
+        const _supabase = _supabaseLib ? _supabaseLib.createClient(_supabaseUrl, _supabaseKey) : null;
  
         const urlParams = new URLSearchParams(window.location.search);
         const redirectUrl = urlParams.get('redirect') || 'user-dashboard.html';
@@ -244,7 +244,7 @@
             _supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin + '/auth/callback.html'
+                    redirectTo: window.location.origin + '/auth/callback.html?redirect=' + encodeURIComponent(redirectUrl)
                 }
             });
         });

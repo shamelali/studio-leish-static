@@ -513,7 +513,7 @@
             const logoValue = document.getElementById('logo-input').value;
             const { error } = await _supabaseClient
                 .from('site_settings')
-                .upsert({ key: 'logo', value: logoValue }, { onConflict: 'key' });
+                .upsert({ setting_key: 'logo', setting_value: { value: logoValue } }, { onConflict: 'setting_key' });
             
             const savedMsg = document.getElementById('logo-saved');
             if (!error) {

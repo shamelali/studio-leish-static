@@ -693,6 +693,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
 // ─── Constants ───────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
@@ -926,18 +927,58 @@ function validateStep(step) {
  
 async function handleNext() {
     if (!validateStep(currentStep)) return;
- 
-    // Auth gate: step 3 → 4
+
+    // Auth gate: step 3 → 4 (soft — offer guest checkout)
     if (currentStep === 3 && supabaseClient) {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session?.user) {
             saveBookingState();
-            window.location.href = 'user.html?redirect=' + encodeURIComponent('book.html?restored=true');
+            showAuthModal();
             return;
         }
     }
- 
+
     goToStep(currentStep + 1);
+}
+
+// ─── Auth Modal ───────────────────────────────────────────────────────────────
+function showAuthModal() {
+    // Remove existing modal if any
+    const existing = document.getElementById('auth-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'auth-modal';
+    modal.innerHTML = `
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;">
+            <div style="background:var(--secondary);border:2px solid var(--border);border-radius:16px;padding:40px;max-width:400px;width:100%;text-align:center;">
+                <i class="fas fa-user-circle" style="font-size:3rem;color:var(--accent);margin-bottom:16px;"></i>
+                <h3 style="margin-bottom:8px;font-size:1.4rem;">Sign in for a better experience</h3>
+                <p style="color:var(--text-muted);margin-bottom:24px;font-size:0.95rem;">Track your bookings, leave reviews, and more</p>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <button id="auth-modal-signin" class="btn btn-primary" style="width:100%;"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+                    <button id="auth-modal-guest" class="btn btn-secondary" style="width:100%;"><i class="fas fa-user"></i> Continue as Guest</button>
+                    <button id="auth-modal-cancel" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.9rem;padding:8px;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('auth-modal-signin').addEventListener('click', () => {
+        modal.remove();
+        window.location.href = 'user.html?redirect=' + encodeURIComponent('book.html?restored=true');
+    });
+
+    document.getElementById('auth-modal-guest').addEventListener('click', () => {
+        modal.remove();
+        goToStep(currentStep + 1);
+    });
+
+    document.getElementById('auth-modal-cancel').addEventListener('click', () => {
+        modal.remove();
+    });
 }
  
 // ─── Button Wiring ────────────────────────────────────────────────────────────
@@ -1018,20 +1059,18 @@ async function confirmBooking() {
     const bookingData = {
         booking_id:       bookingId,
         room:             booking.room?.name,
-        room_price_hr:    booking.room?.pricePerHour,
+        room_price:       booking.room?.pricePerHour,
         date:             booking.date,
-        start_time:       booking.startTime,
-        end_time:         booking.endTime || booking.startTime,
-        duration_hours:   booking.durationHours,
+        time:             timeStr,
+        sessionType:      timeMode === 'single' ? 'Single Session' : 'Range Session',
+        totalAmount:      calculateTotal(),
         addons:           JSON.stringify(booking.addons),
-        client_name:      booking.client.name,
-        client_email:     booking.client.email,
-        client_phone:     booking.client.phone,
-        client_notes:     booking.client.notes,
-        total_amount:     calculateTotal(),
+        clientName:       booking.client.name,
+        clientEmail:      booking.client.email,
+        clientPhone:      booking.client.phone,
+        adminNotes:       booking.client.notes,
         status:           'pending',
-        payment_status:   'pending',
-        created_at:       new Date().toISOString()
+        paymentStatus:    'pending'
     };
  
     if (supabaseClient) {
@@ -1119,7 +1158,12 @@ function restoreBookingState() {
  
 // On load
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('restored') === 'true' && sessionStorage.getItem('authCompleted') === 'true') {
+const authParam = urlParams.get('auth');
+if (authParam) {
+    // Google OAuth redirect — restore booking state
+    sessionStorage.setItem('authCompleted', 'true');
+    restoreBookingState();
+} else if (urlParams.get('restored') === 'true' && sessionStorage.getItem('authCompleted') === 'true') {
     sessionStorage.removeItem('authCompleted');
     restoreBookingState();
 }
@@ -1133,6 +1177,8 @@ if (urlParams.get('restored') === 'true' && sessionStorage.getItem('authComplete
     if (date) { datePicker.setDate(date); booking.date = date; renderTimeGrid(); }
     if (time) { setTimeout(() => { document.querySelectorAll('.time-slot').forEach(s => { if (s.textContent.trim() === time) s.click(); }); }, 50); }
 })();
+
+}); // end DOMContentLoaded
 </script>
 <script src="booking-details.js"></script>
 </body>
