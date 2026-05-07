@@ -943,7 +943,6 @@ async function handleNext() {
 
 // ─── Auth Modal ───────────────────────────────────────────────────────────────
 function showAuthModal() {
-    // Remove existing modal if any
     const existing = document.getElementById('auth-modal');
     if (existing) existing.remove();
 
@@ -1160,7 +1159,6 @@ function restoreBookingState() {
 const urlParams = new URLSearchParams(window.location.search);
 const authParam = urlParams.get('auth');
 if (authParam) {
-    // Google OAuth redirect — restore booking state
     sessionStorage.setItem('authCompleted', 'true');
     restoreBookingState();
 } else if (urlParams.get('restored') === 'true' && sessionStorage.getItem('authCompleted') === 'true') {
@@ -1180,6 +1178,5 @@ if (authParam) {
 
 }); // end DOMContentLoaded
 </script>
-<script src="booking-details.js"></script>
 </body>
 </html>
