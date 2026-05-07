@@ -506,7 +506,14 @@
         const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
         
-        window.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        let supabase;
+        if (typeof window.supabase === 'undefined') {
+            const { createClient } = window.Supabase || {};
+            supabase = createClient ? createClient(supabaseUrl, supabaseKey) : null;
+            window.supabase = supabase;
+        } else {
+            supabase = window.supabase;
+        }
 
         let allBookings = []; // Store all bookings for filtering
         let allReviews = []; // Store all reviews for analytics
