@@ -1,7 +1,7 @@
-# Studio Leish - Project Status
+# Studio Leish - Project Status #
 
 **Last Updated:** May 7, 2026
-**Status:** ✅ All Phases Complete (1-6)
+**Status:** ✅ Code Complete - DB Migration Pending
 **Live URL:** https://studio.leish.my
 
 ---
@@ -15,41 +15,50 @@
 | 3 | Payment Integration (Billplz) | ✅ Complete* |
 | 4 | Admin Dashboard | ✅ Complete |
 | 5 | User Accounts | ✅ Complete |
-| 6 | Advanced Features | ✅ Complete* |
+| 6 | Advanced Features | ✅ Complete |
 
 *Pending API key configuration
 
 ---
 
-## ✅ What's Working
+## ✅ What's Recently Implemented
 
-- **6-step booking flow** with Supabase integration (updated to 7 steps)
-- **Room order:** Makeup Station → Classroom → Creative Studio
-- **Makeup Station A/B** with real-time availability (green=available, red=booked)
-- **Classroom form:** Class type, pax count, refreshments, special requests
-- **Creative Studio form:** Usage type (Content Creation/Photoshoot/Small Event) with conditional fields
-- **Real-time availability** via Supabase subscription
-- Word count validation for textareas
-- User registration/login (email + Google OAuth ready)
-- Admin dashboard with booking management
-- Review/rating system (code ready)
-- PWA capabilities (offline support)
-- Push notification infrastructure
-- Gallery/Browse Spaces page
-- Email confirmations via Resend
-- Payment integration with Billplz (needs API key)
+### Booking Page Redesign (May 7, 2026)
+- **Room order changed:** Makeup Station → Classroom → Creative Studio
+- **New Step 2: Room Details** with conditional forms
+- **Makeup Station A/B:** Real-time availability (🟢 green=available, 🔴 red=booked)
+- **Classroom form:** Class type, pax count, refreshments (120 words), special request (1200 words)
+- **Creative Studio form:** Usage type → redirects to Add-ons (Content Creation/Photoshoot) or shows event details (Small Event)
+- **Database migration SQL:** `/supabase/migration-complete.sql`
+
+### Admin Dashboard
+- Updated edit modal to show: `room_number`, `class_type`, `pax_count`, `refreshments`, `special_request_class`, `usage_type`, `event_type`, `event_pax`, `special_request_creative`
 
 ---
 
-## ⏳ Pending Configuration
+## ⚠️ Pending Actions (Manual)
 
-1. **Database Migration** - Run SQL in Supabase Dashboard:
-   - File: `supabase/migration-room-details.sql`
-   - Adds: `room_number`, `class_type`, `pax_count`, `refreshments`, `special_request_class`, `usage_type`, `event_type`, `event_pax`, `special_request_creative`
-   
-2. **Billplz API Key** - Set `BILLPLZ_API_KEY` in Vercel env
-3. **Google OAuth** - Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in Vercel env
-4. **Custom Domain** - Complete DNS propagation for `studio.leish.my`
+### 1. **Run Database Migration** (REQUIRED)
+**File:** `supabase/migration-complete.sql`
+**Steps:**
+1. Go to: https://supabase.com/dashboard/project/kcmoibrqyrzueslaqtgc/sql/
+2. Copy content from `supabase/migration-complete.sql`
+3. Click **Run**
+
+This adds these columns to `bookings` table:
+- `room_number` (TEXT) - for Makeup Station A/B
+- `class_type`, `pax_count`, `refreshments`, `special_request_class`
+- `usage_type`, `event_type`, `event_pax`, `special_request_creative`
+
+### 2. **Configure API Keys** (Optional)
+- **Billplz:** Set `BILLPLZ_API_KEY` in Vercel env
+- **Google OAuth:** Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in Vercel env
+
+### 3. **Test the Flow**
+1. Visit: https://studio.leish.my/book.html
+2. Select **Makeup Station** → Choose Station A or B (see real-time availability)
+3. Select **Classroom** → Fill in class details form
+4. Select **Creative Studio** → Choose usage type → redirects to Add-ons
 
 ---
 
@@ -74,23 +83,21 @@
 
 ---
 
-## 📝 Recent Updates (May 7, 2026)
+## 📝 Recent Commits (May 7, 2026)
 
-1. **Room Order Changed:** Makeup Station → Classroom → Creative Studio
-2. **New Step 2:** Room Details (Makeup Station A/B, Classroom form, Creative Studio form)
-3. **Real-time Availability:** Makeup Station buttons update instantly via Supabase subscription
-4. **Admin Dashboard:** Updated edit modal to show new booking fields
-5. **Database Migration:** SQL file ready at `supabase/migration-room-details.sql`
+1. `667185a` - feat: Add complete bookings table migration SQL
+2. `fa753e2` - docs: Update project status with recent booking page changes
+3. `13ceb88` - feat: Add room details fields to admin edit modal
+4. `c7b6c2f` - fix: Correct SQL migration syntax
+5. `b2fae0b` - Add SQL migration for room details columns
+6. `355f743` - feat: Add Makeup Station A/B, Classroom & Creative Studio forms
+7. `c6e9c96` - Fix: Resolve supabase variable conflict in admin.html
 
 ---
 
 ## 🚀 Next Steps
 
-1. **Run database migration:** 
-   - Go to: https://supabase.com/dashboard/project/kcmoibrqyrzueslaqtgc/sql/
-   - Copy content from `supabase/migration-room-details.sql`
-   - Click **Run**
-   
-2. Get Billplz API key from billplz.com
-3. Configure Google OAuth in Google Cloud Console
-4. Test complete booking → payment → confirmation flow
+1. **Run the SQL migration** in Supabase Dashboard (5 minutes)
+2. **Test booking flow** with new room details (10 minutes)
+3. **Configure Billplz** for payment processing (30 minutes)
+4. **Set up Google OAuth** for social login (1 hour)
