@@ -621,26 +621,40 @@ let timeMode = 'range'; // 'range' | 'single'
 let pickingEnd = false;  // range mode state: false = picking start, true = picking end
  
 // ─── Supabase ────────────────────────────────────────────────────────────────
-const lib = window.supabase || window.Supabase;
-const supabaseClient = lib ? lib.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
- 
-// ─── Flatpickr ───────────────────────────────────────────────────────────────
-const datePicker = flatpickr('#booking-date', {
-    minDate: 'today',
-    dateFormat: 'Y-m-d',
-    disableMobile: true,
-    onChange(selectedDates, dateStr) {
-        booking.date = dateStr;
-        document.getElementById('date-card').classList.add('filled');
-        // Reset time on new date
-        booking.startTime = null;
-        booking.endTime = null;
-        booking.durationHours = 0;
-        pickingEnd = false;
-        renderTimeGrid();
-        updateSummaryBar();
+let supabaseClient = null;
+try {
+    const lib = window.supabase || window.Supabase;
+    if (lib && typeof lib.createClient === 'function') {
+        supabaseClient = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } else {
+        console.warn('Supabase client not available');
     }
-});
+} catch(e) { console.warn('Supabase init error:', e.message); }
+
+// ─── Flatpickr ───────────────────────────────────────────────────────────────
+let datePicker = null;
+try {
+    if (typeof flatpickr === 'function') {
+        datePicker = flatpickr('#booking-date', {
+            minDate: 'today',
+            dateFormat: 'Y-m-d',
+            disableMobile: true,
+            onChange(selectedDates, dateStr) {
+                booking.date = dateStr;
+                document.getElementById('date-card').classList.add('filled');
+                // Reset time on new date
+                booking.startTime = null;
+                booking.endTime = null;
+                booking.durationHours = 0;
+                pickingEnd = false;
+                renderTimeGrid();
+                updateSummaryBar();
+            }
+        });
+    } else {
+        console.warn('flatpickr not loaded');
+    }
+} catch(e) { console.warn('flatpickr init error:', e.message); }
  
 // ─── Time Grid ───────────────────────────────────────────────────────────────
 function renderTimeGrid() {
@@ -997,7 +1011,7 @@ function restoreBookingState() {
         sessionStorage.removeItem('pendingBooking');
  
         if (s.room)   { booking.room = s.room; document.querySelectorAll('.room-card').forEach(c => { if (c.querySelector('.room-name').textContent === s.room.name) c.classList.add('selected'); }); }
-        if (s.date)   { booking.date = s.date; datePicker.setDate(s.date); }
+        if (s.date && datePicker)   { booking.date = s.date; datePicker.setDate(s.date); }
         if (s.timeMode) timeMode = s.timeMode;
         if (s.startTime) booking.startTime = s.startTime;
         if (s.endTime)   booking.endTime   = s.endTime;
@@ -1032,7 +1046,7 @@ if (authParam) {
     const date = urlParams.get('date');
     const time = urlParams.get('time');
     if (room) document.querySelectorAll('.room-card').forEach(c => { if (c.querySelector('.room-name').textContent === room) c.click(); });
-    if (date) { datePicker.setDate(date); booking.date = date; renderTimeGrid(); }
+    if (date && datePicker) { datePicker.setDate(date); booking.date = date; renderTimeGrid(); }
     if (time) { setTimeout(() => { document.querySelectorAll('.time-slot').forEach(s => { if (s.textContent.trim() === time) s.click(); }); }, 50); }
 })();
 
