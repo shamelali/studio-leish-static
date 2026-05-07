@@ -2,13 +2,13 @@
 -- Run this in Supabase Dashboard → SQL Editor
 -- https://supabase.com/dashboard/project/kcmoibrqyrzueslaqtgc/sql/
 
--- First, check existing columns
+-- First, check if the table exists and see all columns
 SELECT column_name, data_type 
 FROM information_schema.columns 
 WHERE table_name = 'bookings' 
 ORDER BY ordinal_position;
 
--- Add new columns to bookings table
+-- Add new columns to bookings table (safe to run multiple times)
 ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS room_number TEXT;
 ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS class_type TEXT CHECK (class_type IN ('private', 'group'));
 ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS pax_count INTEGER;
@@ -19,13 +19,13 @@ ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS event_type TEXT;
 ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS event_pax INTEGER;
 ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS special_request_creative TEXT;
 
--- Backfill past Makeup Station bookings to Station A (default)
--- Note: column is named 'room' in your schema, not 'room_name'
-UPDATE public.bookings 
-SET room_number = 'A' 
-WHERE room = 'Makeup Station' AND room_number IS NULL;
-
 -- Verify the changes
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_name = 'bookings' 
+ORDER BY ordinal_position;
+
+-- Show sample data
 SELECT booking_id, room, room_number, class_type, usage_type 
 FROM public.bookings 
 LIMIT 5;
