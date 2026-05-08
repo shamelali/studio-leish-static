@@ -505,8 +505,8 @@
         const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
 
-        // Initialize Supabase client using the global from CDN
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // Initialize Supabase client - use different variable name to avoid conflict
+        const sbClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         let allBookings = []; // Store all bookings for filtering
         let allReviews = []; // Store all reviews for analytics
@@ -546,7 +546,7 @@
             allImages.forEach(img => {
                 const card = document.createElement('div');
                 card.className = 'image-card';
-                const imageUrl = supabase.storage.from('studio-images').getPublicUrl(img.file_path).data.publicUrl;
+                const imageUrl = sbClient.storage.from('studio-images').getPublicUrl(img.file_path).data.publicUrl;
                 card.innerHTML = `
                     <img src="${imageUrl}" alt="${img.original_name}">
                     <div class="overlay">
@@ -568,11 +568,11 @@
             for (let file of files) {
                 if (file.size > 5242880) { alert('File too large: ' + file.name); continue; }
                 const filePath = `${Date.now()}_${file.name}`;
-                const { error: uploadError } = await supabase.storage
+                const { error: uploadError } = await sbClient.storage
                     .from('studio-images')
                     .upload(filePath, file);
                 if (uploadError) { alert('Upload failed: ' + uploadError.message); continue; }
-                await supabase.from('images').insert({
+                await sbClient.from('images').insert({
                     filename: file.name,
                     original_name: file.name,
                     file_path: filePath,
@@ -589,8 +589,8 @@
 
         async function deleteImage(imageId, filePath) {
             if (!confirm('Delete this image?')) return;
-            await supabase.from('images').update({ is_active: false }).eq('id', imageId);
-            await supabase.storage.from('studio-images').remove([filePath]);
+            await sbClient.from('images').update({ is_active: false }).eq('id', imageId);
+            await sbClient.storage.from('studio-images').remove([filePath]);
             loadImages();
         }
 
@@ -601,7 +601,7 @@
             const newType = prompt('Image type (gallery/hero/thumbnail):', img.image_type || 'gallery');
             const newOrder = prompt('Display order:', img.display_order || 0);
             if (newRoom !== null) {
-                await supabase.from('images').update({
+                await sbClient.from('images').update({
                     room_name: newRoom,
                     image_type: newType,
                     display_order: parseInt(newOrder) || 0
@@ -664,8 +664,8 @@
             if (typeof value === 'string') {
                 try { parsedValue = JSON.parse(value); } catch(e) { /* keep as string */ }
             }
-            await supabase.from('site_settings')
-                .update({ setting_value: { value: parsedValue }, updated_by: (await supabase.auth.getUser()).data.user?.id })
+            await sbClient.from('site_settings')
+                .update({ setting_value: { value: parsedValue }, updated_by: (await sbClient.auth.getUser()).data.user?.id })
                 .eq('setting_key', key);
         }
 
@@ -674,7 +674,7 @@
             // In production, this would trigger via Supabase Edge Function or server
             alert(`Push Notification:\nTitle: ${title}\nBody: ${body}`);
             // Store notification in database for logging
-            await supabase.from('notifications').insert({
+            await sbClient.from('notifications').insert({
                 title, body, url, sent_at: new Date().toISOString()
             }).catch(() => {}); // Table may not exist
         }
@@ -713,7 +713,7 @@
 
         // Check if already logged in
         (async function() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await sbClient.auth.getSession();
             if (session) showDashboard();
         })();
 
@@ -733,7 +733,7 @@
             loginBtn.disabled = true;
             errorDiv.textContent = '';
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
 
             if (error) {
                 loginBtn.textContent = 'Sign In';
@@ -751,7 +751,7 @@
         }
 
         function logout() {
-            supabase.auth.signOut();
+            sbClient.auth.signOut();
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('login-form').style.display = 'block';
         }
@@ -769,8 +769,8 @@
 
             // Fetch bookings and reviews in parallel
             const [bookingsRes, reviewsRes] = await Promise.all([
-                supabase.from('bookings').select('*').order('createdAt', { ascending: false }).limit(100),
-                supabase.from('reviews').select('*')
+                sbClient.from('bookings').select('*').order('createdAt', { ascending: false }).limit(100),
+                sbClient.from('reviews').select('*')
             ]);
 
             if (bookingsRes.error) {
