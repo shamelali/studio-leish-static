@@ -714,7 +714,12 @@
             { key: 'db_schema', value: 'public', type: 'text', group: 'Database', description: 'Default schema' },
             { key: 'db_max_rows', value: 42, type: 'number', group: 'Database', description: 'Max rows returned' },
             { key: 'db_pool', value: 42, type: 'number', group: 'Database', description: 'Pool size' },
-            { key: 'db_extra_search_path', value: '', type: 'text', group: 'Database', description: 'Extra search path' }
+            { key: 'db_extra_search_path', value: '', type: 'text', group: 'Database', description: 'Extra search path' },
+            // Storage
+            { key: 'storage_file_size_limit', value: 5242880, type: 'number', group: 'Storage', description: 'Max file size (bytes)' },
+            { key: 'storage_image_transformation', value: true, type: 'boolean', group: 'Storage', description: 'Enable image transformation' },
+            { key: 'storage_s3_protocol', value: true, type: 'boolean', group: 'Storage', description: 'Enable S3 protocol' },
+            { key: 'storage_max_buckets', value: 0, type: 'number', group: 'Storage', description: 'Max buckets (0=unlimited)' }
         ];
 
         async function loadSettings() {
