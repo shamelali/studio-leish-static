@@ -261,13 +261,12 @@
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
 
-            <!-- Navigation Tabs -->
-            <div class="nav-tabs">
-                <button class="nav-tab active" onclick="switchTab('bookings')">Bookings</button>
-                <button class="nav-tab" onclick="switchTab('images')">Images</button>
-                <button class="nav-tab" onclick="switchTab('settings')">Settings</button>
-                <button class="nav-tab" onclick="switchTab('analytics')">Analytics</button>
-            </div>
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('bookings')">Bookings</button>
+            <button class="nav-tab" onclick="switchTab('images')">Images</button>
+            <button class="nav-tab" onclick="switchTab('settings')">Settings</button>
+        </div>
 
             <!-- Bookings Tab -->
             <div id="tab-bookings" class="tab-content active">
@@ -344,14 +343,51 @@
                  </thead>
                  <tbody id="bookings-tbody">
                  </tbody>
-             </table>
-         </div>
+              </table>
 
-         <!-- Images Tab -->
-         <div id="tab-images" class="tab-content">
-             <h3 style="margin-bottom: 20px;">Image Management</h3>
+              <!-- Analytics Section -->
+              <div class="analytics-section" style="margin-top: 40px;">
+                  <h3 style="margin-bottom: 20px;">Booking Analytics</h3>
+                  <div class="stats-grid" id="analytics-stats">
+                      <div class="stat-card">
+                          <h3 id="analytics-this-month">0</h3>
+                          <p>This Month</p>
+                      </div>
+                      <div class="stat-card">
+                          <h3 id="analytics-revenue-month">MYR 0</h3>
+                          <p>Revenue This Month</p>
+                      </div>
+                      <div class="stat-card">
+                          <h3 id="analytics-avg-rating">0</h3>
+                          <p>Average Rating</p>
+                      </div>
+                  </div>
+                  <div style="margin-top: 30px;">
+                      <h4 style="margin-bottom: 15px;">Booking Trends</h4>
+                      <div id="booking-trends" style="color: var(--text-muted); font-size: 14px;"></div>
+                  </div>
+              </div>
+          </div>
 
-             <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <!-- Images Tab -->
+          <div id="tab-images" class="tab-content">
+              <h3 style="margin-bottom: 20px;">Image Management</h3>
+
+              <!-- Filter Controls -->
+              <div class="controls">
+                  <select class="filter-select" id="image-type-filter" onchange="filterImages()">
+                      <option value="">All Pages</option>
+                      <option value="hero">Homepage Hero</option>
+                      <option value="gallery">Gallery Page</option>
+                      <option value="thumbnail">Room Thumbnails</option>
+                      <option value="room">Room Pages</option>
+                  </select>
+                  <select class="filter-select" id="image-room-filter" onchange="filterImages()">
+                      <option value="">All Rooms</option>
+                  </select>
+              </div>
+
+              <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
                  <i class="fas fa-cloud-upload-alt"></i>
                  <p>Click or drag images here to upload</p>
                  <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">JPEG, PNG, WebP, GIF (max 5MB)</p>
@@ -371,35 +407,7 @@
              </div>
          </div>
 
-         <!-- Analytics Tab -->
-         <div id="tab-analytics" class="tab-content">
-             <h3 style="margin-bottom: 20px;">Advanced Analytics</h3>
-             <div class="stats-grid" id="analytics-stats">
-                 <div class="stat-card">
-                     <h3 id="analytics-total-bookings">0</h3>
-                     <p>Total Bookings</p>
-                 </div>
-                 <div class="stat-card">
-                     <h3 id="analytics-this-month">0</h3>
-                     <p>This Month</p>
-                 </div>
-                 <div class="stat-card">
-                     <h3 id="analytics-avg-rating">0</h3>
-                     <p>Average Rating</p>
-                 </div>
-                 <div class="stat-card">
-                     <h3 id="analytics-revenue-month">MYR 0</h3>
-                     <p>Revenue This Month</p>
-                 </div>
-             </div>
-             <div style="margin-top: 30px;">
-                 <h4 style="margin-bottom: 15px;">Booking Trends</h4>
-                 <div id="booking-trends" style="color: var(--text-muted); font-size: 14px;">
-                     <!-- Trends will be displayed here -->
-                 </div>
-             </div>
-         </div>
-     </div>
+      </div>
 
     <!-- Edit Modal -->
     <div class="modal-overlay" id="edit-modal">
@@ -523,48 +531,102 @@
 
             if (tabName === 'images') loadImages();
             if (tabName === 'settings') loadSettings();
-            if (tabName === 'analytics') updateAnalytics();
+            if (tabName === 'bookings') updateAnalytics();
         }
 
         // Image Management
         let currentImageId = null;
 
         async function loadImages() {
-            const { data, error } = await supabase
+            const { data, error } = await sbClient
                 .from('images')
                 .select('*')
                 .eq('is_active', true)
                 .order('display_order', { ascending: true });
             if (error) { console.error('Error loading images:', error); return; }
             allImages = data || [];
-            displayImages();
+            
+            // Populate room filter
+            const roomFilter = document.getElementById('image-room-filter');
+            const rooms = [...new Set(allImages.map(img => img.room_name).filter(Boolean))];
+            roomFilter.innerHTML = '<option value="">All Rooms</option>' + 
+                rooms.map(r => `<option value="${r}">${r}</option>`).join('');
+            
+            filterImages();
         }
 
-        function displayImages() {
+        function filterImages() {
+            const typeFilter = document.getElementById('image-type-filter').value;
+            const roomFilter = document.getElementById('image-room-filter').value;
+            
+            let filtered = allImages;
+            if (typeFilter) {
+                filtered = filtered.filter(img => img.image_type === typeFilter);
+            }
+            if (roomFilter) {
+                filtered = filtered.filter(img => img.room_name === roomFilter);
+            }
+            
+            displayImages(filtered);
+        }
+
+        function displayImages(filteredImages) {
+            const images = filteredImages || allImages;
             const grid = document.getElementById('image-grid');
             grid.innerHTML = '';
-            allImages.forEach(img => {
-                const card = document.createElement('div');
-                card.className = 'image-card';
-                const imageUrl = sbClient.storage.from('studio-images').getPublicUrl(img.file_path).data.publicUrl;
-                card.innerHTML = `
-                    <img src="${imageUrl}" alt="${img.original_name}">
-                    <div class="overlay">
-                        <button class="btn-icon btn-edit-icon" onclick="editImage('${img.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn-icon btn-danger-icon" onclick="deleteImage('${img.id}', '${img.file_path}')"><i class="fas fa-trash"></i></button>
-                    </div>
-                    <div class="info">
-                        <div>${img.original_name}</div>
-                        <div>Room: ${img.room_name || 'N/A'} | Type: ${img.image_type}</div>
-                    </div>
-                `;
-                grid.appendChild(card);
+            
+            // Group images by type
+            const grouped = {};
+            images.forEach(img => {
+                const type = img.image_type || 'other';
+                if (!grouped[type]) grouped[type] = [];
+                grouped[type].push(img);
+            });
+            
+            // Display groups with headers
+            const typeLabels = {
+                'hero': 'Homepage Hero Images',
+                'gallery': 'Gallery Page Images',
+                'thumbnail': 'Room Thumbnails',
+                'room': 'Room Page Images',
+                'other': 'Other Images'
+            };
+            
+            Object.keys(grouped).forEach(type => {
+                // Add section header
+                const header = document.createElement('div');
+                header.style = 'grid-column: 1 / -1; margin: 20px 0 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border);';
+                header.innerHTML = `<h4 style="color: var(--accent);">${typeLabels[type] || type}</h4>`;
+                grid.appendChild(header);
+                
+                // Add images in this group
+                grouped[type].forEach(img => {
+                    const card = document.createElement('div');
+                    card.className = 'image-card';
+                    const imageUrl = sbClient.storage.from('studio-images').getPublicUrl(img.file_path).data.publicUrl;
+                    card.innerHTML = `
+                        <img src="${imageUrl}" alt="${img.original_name}">
+                        <div class="overlay">
+                            <button class="btn-icon btn-edit-icon" onclick="editImage('${img.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon btn-danger-icon" onclick="deleteImage('${img.id}', '${img.file_path}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <div class="info">
+                            <div>${img.original_name}</div>
+                            <div>Room: ${img.room_name || 'N/A'} | Type: ${img.image_type}</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
             });
         }
 
         async function handleFileUpload(event) {
             const files = event.target.files;
             if (!files.length) return;
+            
+            // Get selected image type from filter
+            const selectedType = document.getElementById('image-type-filter').value || 'gallery';
+            
             for (let file of files) {
                 if (file.size > 5242880) { alert('File too large: ' + file.name); continue; }
                 const filePath = `${Date.now()}_${file.name}`;
@@ -579,7 +641,7 @@
                     file_size: file.size,
                     mime_type: file.type,
                     room_name: '',
-                    image_type: 'gallery'
+                    image_type: selectedType
                 });
             }
             alert('Upload complete!');
@@ -611,23 +673,56 @@
         }
 
         // Settings Management
+        const defaultSettings = [
+            // General
+            { key: 'site_title', value: 'Studio Leish', type: 'text', group: 'General', description: 'Website title displayed in browser tab' },
+            { key: 'site_tagline', value: 'Professional Photography Studio', type: 'text', group: 'General', description: 'Tagline shown on homepage' },
+            // Contact
+            { key: 'contact_email', value: 'info@leish.my', type: 'email', group: 'Contact', description: 'Public contact email' },
+            { key: 'contact_phone', value: '+60 12-345 6789', type: 'tel', group: 'Contact', description: 'Public contact phone' },
+            { key: 'studio_address', value: 'Kuala Lumpur, Malaysia', type: 'text', group: 'Contact', description: 'Physical studio address' },
+            // Social
+            { key: 'facebook_url', value: 'https://facebook.com/studioleish', type: 'url', group: 'Social Media', description: 'Facebook page URL' },
+            { key: 'instagram_url', value: 'https://instagram.com/studioleish', type: 'url', group: 'Social Media', description: 'Instagram profile URL' },
+            // Booking
+            { key: 'max_advance_days', value: 90, type: 'number', group: 'Booking', description: 'Max days in advance bookings can be made' },
+            { key: 'cancellation_hours', value: 24, type: 'number', group: 'Booking', description: 'Hours before booking for free cancellation' },
+            { key: 'min_booking_hours', value: 4, type: 'number', group: 'Booking', description: 'Minimum hours notice required for booking' },
+            // Notifications
+            { key: 'push_enabled', value: true, type: 'boolean', group: 'Notifications', description: 'Enable push notifications' },
+            { key: 'push_new_booking', value: true, type: 'boolean', group: 'Notifications', description: 'Notify on new booking' },
+            { key: 'push_new_review', value: true, type: 'boolean', group: 'Notifications', description: 'Notify on new review' },
+            { key: 'push_payment', value: true, type: 'boolean', group: 'Notifications', description: 'Notify on payment received' }
+        ];
+
         async function loadSettings() {
-            const { data, error } = await supabase
+            const { data, error } = await sbClient
                 .from('site_settings')
-                .select('*')
-                .order('setting_key');
+                .select('*');
             if (error) { console.error('Error loading settings:', error); return; }
+            
             allSettings = data || [];
-            // Add push notification settings if not exists
-            const pushSettings = ['push_enabled', 'push_new_booking', 'push_new_review', 'push_payment'];
-            pushSettings.forEach(key => {
-                if (!allSettings.find(s => s.setting_key === key)) {
+            
+            // Add default settings if they don't exist in DB
+            for (const def of defaultSettings) {
+                if (!allSettings.find(s => s.setting_key === def.key)) {
                     allSettings.push({
-                        setting_key: key,
-                        setting_value: { value: true },
-                        description: `Enable ${key.replace('push_', '').replace(/_/g, ' ')} notifications`
+                        setting_key: def.key,
+                        setting_value: { value: def.value },
+                        description: def.description,
+                        group: def.group,
+                        type: def.type
                     });
+                } else {
+                    // Add group/type info to existing settings
+                    const existing = allSettings.find(s => s.setting_key === def.key);
+                    existing.group = def.group;
+                    existing.type = def.type;
                 }
+            }
+            
+            displaySettings();
+        }
             });
             displaySettings();
         }
@@ -635,37 +730,78 @@
         function displaySettings() {
             const grid = document.getElementById('settings-grid');
             grid.innerHTML = '';
+            
+            // Group settings by group
+            const grouped = {};
             allSettings.forEach(setting => {
-                const value = setting.setting_value.value !== undefined ? setting.setting_value.value : setting.setting_value;
-                const card = document.createElement('div');
-                card.className = 'setting-card';
-                card.innerHTML = `
-                    <div class="setting-header">
-                        <h3>${setting.setting_key.replace(/_/g, ' ').toUpperCase()}</h3>
-                        ${typeof value === 'boolean' ? `
+                const group = setting.group || 'Other';
+                if (!grouped[group]) grouped[group] = [];
+                grouped[group].push(setting);
+            });
+            
+            // Display each group
+            Object.keys(grouped).forEach(groupName => {
+                // Group header
+                const header = document.createElement('div');
+                header.style = 'grid-column: 1 / -1; margin: 20px 0 10px; padding-bottom: 10px; border-bottom: 2px solid var(--accent);';
+                header.innerHTML = `<h4 style="color: var(--accent);">${groupName} Settings</h4>`;
+                grid.appendChild(header);
+                
+                // Settings in this group
+                grouped[groupName].forEach(setting => {
+                    const value = setting.setting_value.value !== undefined ? setting.setting_value.value : setting.setting_value;
+                    const type = setting.type || (typeof value === 'boolean' ? 'boolean' : 'text');
+                    
+                    const card = document.createElement('div');
+                    card.className = 'setting-card';
+                    
+                    let inputHtml = '';
+                    if (type === 'boolean') {
+                        inputHtml = `
                             <label class="toggle-switch">
                                 <input type="checkbox" ${value ? 'checked' : ''} onchange="updateSetting('${setting.setting_key}', this.checked)">
                                 <span class="toggle-slider"></span>
                             </label>
-                        ` : ''}
-                    </div>
-                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 10px;">${setting.description || ''}</p>
-                    ${typeof value !== 'boolean' ? `
-                        <input type="text" class="setting-input" value="${typeof value === 'object' ? JSON.stringify(value) : value}"
-                               onchange="updateSetting('${setting.setting_key}', this.value)">
-                    ` : ''}
-                `;
-                grid.appendChild(card);
+                        `;
+                    } else {
+                        const inputType = type === 'url' ? 'url' : type === 'email' ? 'email' : type === 'number' ? 'number' : 'text';
+                        inputHtml = `
+                            <input type="${inputType}" class="setting-input" value="${typeof value === 'object' ? JSON.stringify(value) : value}"
+                                   onchange="updateSetting('${setting.setting_key}', this.value, '${type}')">
+                        `;
+                    }
+                    
+                    card.innerHTML = `
+                        <div class="setting-header">
+                            <div>
+                                <h3 style="margin-bottom: 5px;">${setting.setting_key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                                <p style="color: var(--text-muted); font-size: 12px;">${setting.description || ''}</p>
+                            </div>
+                            ${inputHtml}
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
             });
         }
 
-        async function updateSetting(key, value) {
+        async function updateSetting(key, value, type) {
             let parsedValue = value;
-            if (typeof value === 'string') {
+            
+            // Parse based on type
+            if (type === 'number') {
+                parsedValue = parseFloat(value) || 0;
+            } else if (type === 'boolean') {
+                parsedValue = value === true || value === 'true';
+            } else if (typeof value === 'string') {
                 try { parsedValue = JSON.parse(value); } catch(e) { /* keep as string */ }
             }
+            
             await sbClient.from('site_settings')
-                .update({ setting_value: { value: parsedValue }, updated_by: (await sbClient.auth.getUser()).data.user?.id })
+                .update({ 
+                    setting_value: { value: parsedValue }, 
+                    updated_by: (await sbClient.auth.getUser()).data.user?.id 
+                })
                 .eq('setting_key', key);
         }
 
