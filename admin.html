@@ -192,6 +192,7 @@
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
 
+            <div id="admin-section">
             <div class="stats-grid" id="stats-grid">
                 <div class="stat-card">
                     <h3 id="total-bookings">0</h3>
@@ -212,6 +213,8 @@
             </div>
 
             <h3 style="margin-bottom: 20px; margin-top: 30px;">Site Settings</h3>
+            
+            <!-- Logo Section -->
             <div style="background: var(--secondary); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
                     <div style="display: flex; align-items: center; gap: 12px;">
@@ -219,7 +222,37 @@
                         <input type="text" id="logo-input" value="🎨" style="width: 60px; padding: 8px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); text-align: center; font-size: 1.5rem;" maxlength="10">
                     </div>
                     <button onclick="saveLogo()" style="padding: 8px 20px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Save Logo</button>
+                    <button onclick="toggleUserView()" style="padding: 8px 20px; background: var(--primary); color: var(--text); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; margin-left: 10px;"><i class="fas fa-user"></i> User View</button>
                     <span id="logo-saved" style="color: var(--success); display: none;">Saved!</span>
+                </div>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div style="background: var(--secondary); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="margin-bottom: 15px;">Site Images</h4>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="color: var(--text-muted); display: block; margin-bottom: 8px;">Logo Image (replaces emoji):</label>
+                    <input type="file" id="logo-image-input" accept="image/*" onchange="uploadLogoImage(this)" style="font-size: 14px; color: var(--text);">
+                    <div id="current-logo-preview" style="margin-top: 10px;"></div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="color: var(--text-muted); display: block; margin-bottom: 8px;">Hero Background Image:</label>
+                    <input type="file" id="hero-image-input" accept="image/*" onchange="uploadHeroImage(this)" style="font-size: 14px; color: var(--text);">
+                    <div id="current-hero-preview" style="margin-top: 10px;"></div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="color: var(--text-muted); display: block; margin-bottom: 8px;">Space Images (select multiple):</label>
+                    <input type="file" id="space-images-input" accept="image/*" multiple onchange="uploadSpaceImages(this)" style="font-size: 14px; color: var(--text);">
+                    <div id="current-space-images-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 10px;"></div>
+                </div>
+
+                <div>
+                    <label style="color: var(--text-muted); display: block; margin-bottom: 8px;">Gallery Images (select multiple):</label>
+                    <input type="file" id="gallery-images-input" accept="image/*" multiple onchange="uploadGalleryImages(this)" style="font-size: 14px; color: var(--text);">
+                    <div id="current-gallery-images-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 10px;"></div>
                 </div>
             </div>
 
@@ -266,6 +299,35 @@
                 <tbody id="bookings-tbody">
                 </tbody>
             </table>
+        </div>
+            </div>
+
+        <!-- User View Section -->
+        <div id="user-view-section" style="display: none;">
+            <h3 style="margin-bottom: 20px;">User Dashboard Preview</h3>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Preview how users see their bookings</p>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="color: var(--text-muted);">Select User Email:</label>
+                <select id="user-email-select" class="filter-select" onchange="loadUserBookings()" style="margin-left: 10px;">
+                    <option value="">-- Select User --</option>
+                </select>
+            </div>
+
+            <div id="user-dashboard-preview" style="display: none;">
+                <div style="background: var(--secondary); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <h2 id="user-view-name" style="margin-bottom: 5px;">Welcome back!</h2>
+                    <p style="color: var(--text-muted);">Here are your upcoming bookings</p>
+                </div>
+
+                <div id="user-view-bookings" style="display: grid; gap: 20px;">
+                </div>
+
+                <div id="user-view-empty" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <i class="fas fa-calendar-check" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                    <p>No upcoming bookings.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -522,10 +584,204 @@
             }
         }
 
+        // Upload Logo Image
+        async function uploadLogoImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64 = e.target.result;
+                await _supabaseClient
+                    .from('site_settings')
+                    .upsert({ setting_key: 'logo_url', setting_value: { value: base64 } }, { onConflict: 'setting_key' });
+                
+                document.getElementById('current-logo-preview').innerHTML = '<img src="' + base64 + '" style="max-width: 100px; max-height: 60px; border-radius: 8px;">';
+                alert('Logo image saved!');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Upload Hero Image
+        async function uploadHeroImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64 = e.target.result;
+                await _supabaseClient
+                    .from('site_settings')
+                    .upsert({ setting_key: 'hero_image_url', setting_value: { value: base64 } }, { onConflict: 'setting_key' });
+                
+                document.getElementById('current-hero-preview').innerHTML = '<img src="' + base64 + '" style="max-width: 150px; max-height: 80px; border-radius: 8px;">';
+                alert('Hero image saved!');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Upload Space Images
+        async function uploadSpaceImages(input) {
+            const files = Array.from(input.files);
+            if (!files.length) return;
+            
+            const images = [];
+            for (const file of files) {
+                const reader = new FileReader();
+                await new Promise(resolve => {
+                    reader.onload = function(e) {
+                        images.push(e.target.result);
+                        resolve();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            await _supabaseClient
+                .from('site_settings')
+                .upsert({ setting_key: 'space_images', setting_value: { value: images } }, { onConflict: 'setting_key' });
+            
+            const preview = document.getElementById('current-space-images-preview');
+            preview.innerHTML = images.map(img => '<img src="' + img + '" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;">').join('');
+            alert('Space images saved! (' + images.length + ' images)');
+        }
+
+        // Upload Gallery Images
+        async function uploadGalleryImages(input) {
+            const files = Array.from(input.files);
+            if (!files.length) return;
+            
+            const images = [];
+            for (const file of files) {
+                const reader = new FileReader();
+                await new Promise(resolve => {
+                    reader.onload = function(e) {
+                        images.push(e.target.result);
+                        resolve();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            await _supabaseClient
+                .from('site_settings')
+                .upsert({ setting_key: 'gallery_images', setting_value: { value: images } }, { onConflict: 'setting_key' });
+            
+            const preview = document.getElementById('current-gallery-images-preview');
+            preview.innerHTML = images.map(img => '<img src="' + img + '" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;">').join('');
+            alert('Gallery images saved! (' + images.length + ' images)');
+        }
+
+        // Load current images on dashboard load
+        async function loadCurrentImages() {
+            const { data } = await _supabaseClient
+                .from('site_settings')
+                .select('key, value')
+                .in('key', ['logo_url', 'hero_image_url', 'space_images', 'gallery_images']);
+            
+            if (data) {
+                data.forEach(setting => {
+                    if (setting.key === 'logo_url' && setting.value) {
+                        document.getElementById('current-logo-preview').innerHTML = '<img src="' + setting.value + '" style="max-width: 100px; max-height: 60px; border-radius: 8px;">';
+                    }
+                    if (setting.key === 'hero_image_url' && setting.value) {
+                        document.getElementById('current-hero-preview').innerHTML = '<img src="' + setting.value + '" style="max-width: 150px; max-height: 80px; border-radius: 8px;">';
+                    }
+                    if (setting.key === 'space_images' && Array.isArray(setting.value)) {
+                        document.getElementById('current-space-images-preview').innerHTML = setting.value.map(img => '<img src="' + img + '" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;">').join('');
+                    }
+                    if (setting.key === 'gallery_images' && Array.isArray(setting.value)) {
+                        document.getElementById('current-gallery-images-preview').innerHTML = setting.value.map(img => '<img src="' + img + '" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;">').join('');
+                    }
+                });
+            }
+        }
+
+        // User View Functions
+        let showingUserView = false;
+
+        function toggleUserView() {
+            showingUserView = !showingUserView;
+            const userViewSection = document.getElementById('user-view-section');
+            const adminSection = document.getElementById('admin-section');
+            
+            if (showingUserView) {
+                userViewSection.style.display = 'block';
+                adminSection.style.display = 'none';
+                loadUserEmails();
+            } else {
+                userViewSection.style.display = 'none';
+                adminSection.style.display = 'block';
+            }
+        }
+
+        async function loadUserEmails() {
+            const { data } = await _supabaseClient
+                .from('bookings')
+                .select('clientEmail')
+                .order('createdAt', { ascending: false })
+                .limit(100);
+            
+            if (!data) return;
+            const uniqueEmails = [...new Set(data.map(b => b.clientEmail).filter(Boolean))];
+            const select = document.getElementById('user-email-select');
+            select.innerHTML = '<option value="">-- Select User --</option>';
+            uniqueEmails.forEach(email => {
+                select.innerHTML += '<option value="' + email + '">' + email + '</option>';
+            });
+        }
+
+        async function loadUserBookings() {
+            const email = document.getElementById('user-email-select').value;
+            const container = document.getElementById('user-dashboard-preview');
+            const bookingsDiv = document.getElementById('user-view-bookings');
+            const emptyDiv = document.getElementById('user-view-empty');
+            
+            if (!email) {
+                container.style.display = 'none';
+                return;
+            }
+
+            const { data: bookings } = await _supabaseClient
+                .from('bookings')
+                .select('*')
+                .eq('clientEmail', email)
+                .order('date', { ascending: true });
+
+            const activeBookings = (bookings || []).filter(b => 
+                b.status === 'pending' || b.status === 'confirmed'
+            );
+
+            container.style.display = 'block';
+            if (activeBookings.length === 0) {
+                bookingsDiv.style.display = 'none';
+                emptyDiv.style.display = 'block';
+                return;
+            }
+
+            bookingsDiv.style.display = 'grid';
+            emptyDiv.style.display = 'none';
+            bookingsDiv.innerHTML = '';
+
+            activeBookings.forEach(booking => {
+                const card = document.createElement('div');
+                card.style = 'background: var(--secondary); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: grid; grid-template-columns: 1fr auto; gap: 10px;';
+                card.innerHTML = '<div>' +
+                    '<h3 style="font-size: 1.1rem; margin-bottom: 5px;">' + (booking.room || 'Booking') + '</h3>' +
+                    '<p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;"><i class="far fa-calendar"></i> ' + (booking.date || 'N/A') + ' at ' + (booking.time || 'N/A') + '</p>' +
+                    '<p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;"><i class="far fa-clock"></i> ' + (booking.sessionType || 'N/A') + '</p>' +
+                    '<p style="font-size: 14px;"><strong>MYR ' + (booking.totalAmount || 0) + '</strong></p>' +
+                    '</div>' +
+                    '<div><span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; background: ' + (booking.status === 'confirmed' ? 'rgba(0, 217, 165, 0.2)' : 'rgba(244, 208, 63, 0.2)') + '; color: ' + (booking.status === 'confirmed' ? 'var(--success)' : '#f4d03f') + ';">' + (booking.status || 'pending') + '</span></div>';
+                bookingsDiv.appendChild(card);
+            });
+        }
+
         function showDashboard() {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             loadBookings();
+            loadCurrentImages();
         }
 
         async function loadBookings() {
