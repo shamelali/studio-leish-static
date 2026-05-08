@@ -623,16 +623,84 @@
             }
         }
 
+        // Third-party Providers
+        let allThirdPartyProviders = [];
+
+        async function loadThirdPartyProviders() {
+            const { data, error } = await sbClient
+                .from('third_party_providers')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) { console.error('Error loading third-party providers:', error); return; }
+            allThirdPartyProviders = data || [];
+            displayThirdPartyProviders();
+        }
+
+        function displayThirdPartyProviders() {
+            let container = document.getElementById('third-party-providers');
+            if (!container) {
+                // Create container if it doesn't exist
+                const settingsGrid = document.getElementById('settings-grid');
+                container = document.createElement('div');
+                container.id = 'third-party-providers';
+                container.style = 'grid-column: 1 / -1; margin-top: 30px;';
+                settingsGrid.parentNode.insertBefore(container, settingsGrid.nextSibling);
+            }
+            container.innerHTML = '<h4 style="color: var(--accent); margin-bottom: 15px;">Third-Party OAuth Providers</h4>';
+            
+            if (allThirdPartyProviders.length === 0) {
+                container.innerHTML += '<p style="color: var(--text-muted);">No third-party providers configured.</p>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'bookings-table';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>OIDC Issuer URL</th>
+                        <th>JWKS URL</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${allThirdPartyProviders.map(p => `
+                        <tr>
+                            <td>${p.id || '-'}</td>
+                            <td>${p.type || '-'}</td>
+                            <td>${p.oidc_issuer_url || '-'}</td>
+                            <td>${p.jwks_url || '-'}</td>
+                            <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : '-'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            container.appendChild(table);
+        }
+
         // Settings Management
         const defaultSettings = [
+            // General
             { key: 'site_title', value: 'Studio Leish', type: 'text', group: 'General', description: 'Website title' },
             { key: 'site_tagline', value: 'Professional Photography Studio', type: 'text', group: 'General', description: 'Tagline' },
+            // Contact
             { key: 'contact_email', value: 'info@leish.my', type: 'email', group: 'Contact', description: 'Public email' },
             { key: 'contact_phone', value: '+60 12-345 6789', type: 'tel', group: 'Contact', description: 'Public phone' },
-            { key: 'facebook_url', value: 'https://facebook.com/studioleish', type: 'url', group: 'Social Media', description: 'Facebook URL' },
-            { key: 'instagram_url', value: 'https://instagram.com/studioleish', type: 'url', group: 'Social Media', description: 'Instagram URL' },
+            // Social Media
+            { key: 'facebook_url', value: 'https://facebook.com/studioleish', type: 'url', group: 'Social Media', description: 'Facebook page URL' },
+            { key: 'instagram_url', value: 'https://instagram.com/studioleish', type: 'url', group: 'Social Media', description: 'Instagram profile URL' },
+            // Booking
             { key: 'max_advance_days', value: 90, type: 'number', group: 'Booking', description: 'Max advance booking days' },
-            { key: 'cancellation_hours', value: 24, type: 'number', group: 'Booking', description: 'Cancellation hours' },
+            { key: 'cancellation_hours', value: 24, type: 'number', group: 'Booking', description: 'Cancellation hours before booking' },
+            // OAuth Providers
+            { key: 'facebook_oauth_enabled', value: false, type: 'boolean', group: 'OAuth Providers', description: 'Enable Facebook login' },
+            { key: 'facebook_app_id', value: '', type: 'text', group: 'OAuth Providers', description: 'Facebook App ID' },
+            { key: 'facebook_app_secret', value: '', type: 'password', group: 'OAuth Providers', description: 'Facebook App Secret' },
+            { key: 'google_oauth_enabled', value: false, type: 'boolean', group: 'OAuth Providers', description: 'Enable Google login' },
+            { key: 'google_client_id', value: '', type: 'text', group: 'OAuth Providers', description: 'Google Client ID' },
+            // Notifications
             { key: 'push_enabled', value: true, type: 'boolean', group: 'Notifications', description: 'Enable push notifications' },
             { key: 'push_new_booking', value: true, type: 'boolean', group: 'Notifications', description: 'Notify on new booking' }
         ];
@@ -675,9 +743,11 @@
                     let inputHtml = '';
                     if (type === 'boolean') {
                         inputHtml = '<label class="toggle-switch"><input type="checkbox" ' + (value ? 'checked' : '') + ' onchange="updateSetting(\'' + setting.setting_key + '\', this.checked)"><span class="toggle-slider"></span></label>';
+                    } else if (type === 'password') {
+                        inputHtml = '<input type="password" class="setting-input" value="' + (value || '') + '" onchange="updateSetting(\'' + setting.setting_key + '\', this.value, \'' + type + '\')" placeholder="Enter secret...">';
                     } else {
                         const inputType = type === 'url' ? 'url' : type === 'email' ? 'email' : type === 'number' ? 'number' : 'text';
-                        inputHtml = '<input type="' + inputType + '" class="setting-input" value="' + (typeof value === 'object' ? JSON.stringify(value) : value) + '" onchange="updateSetting(\'' + setting.setting_key + '\', this.value, \'' + type + '\')">';
+                        inputHtml = '<input type="' + inputType + '" class="setting-input" value="' + (typeof value === 'object' ? JSON.stringify(value) : (value || '')) + '" onchange="updateSetting(\'' + setting.setting_key + '\', this.value, \'' + type + '\')">';
                     }
                     card.innerHTML = '<div class="setting-header"><div><h3 style="margin-bottom: 5px;">' + setting.setting_key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</h3><p style="color: var(--text-muted); font-size: 12px;">' + (setting.description || '') + '</p></div>' + inputHtml + '</div>';
                     grid.appendChild(card);
