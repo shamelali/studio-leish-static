@@ -709,7 +709,12 @@
             { key: 'realtime_max_concurrent', value: 1, type: 'number', group: 'Realtime', description: 'Max concurrent users' },
             { key: 'realtime_max_events_per_sec', value: 1, type: 'number', group: 'Realtime', description: 'Max events per second' },
             { key: 'realtime_max_channels', value: 1, type: 'number', group: 'Realtime', description: 'Max channels per client' },
-            { key: 'realtime_max_payload_kb', value: 1, type: 'number', group: 'Realtime', description: 'Max payload size (KB)' }
+            { key: 'realtime_max_payload_kb', value: 1, type: 'number', group: 'Realtime', description: 'Max payload size (KB)' },
+            // Database Pooler
+            { key: 'db_schema', value: 'public', type: 'text', group: 'Database', description: 'Default schema' },
+            { key: 'db_max_rows', value: 42, type: 'number', group: 'Database', description: 'Max rows returned' },
+            { key: 'db_pool', value: 42, type: 'number', group: 'Database', description: 'Pool size' },
+            { key: 'db_extra_search_path', value: '', type: 'text', group: 'Database', description: 'Extra search path' }
         ];
 
         async function loadSettings() {
