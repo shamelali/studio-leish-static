@@ -702,7 +702,14 @@
             { key: 'google_client_id', value: '', type: 'text', group: 'OAuth Providers', description: 'Google Client ID' },
             // Notifications
             { key: 'push_enabled', value: true, type: 'boolean', group: 'Notifications', description: 'Enable push notifications' },
-            { key: 'push_new_booking', value: true, type: 'boolean', group: 'Notifications', description: 'Notify on new booking' }
+            { key: 'push_new_booking', value: true, type: 'boolean', group: 'Notifications', description: 'Notify on new booking' },
+            // Realtime
+            { key: 'realtime_enabled', value: false, type: 'boolean', group: 'Realtime', description: 'Enable Realtime (WebSocket)' },
+            { key: 'realtime_private_only', value: true, type: 'boolean', group: 'Realtime', description: 'Private only mode' },
+            { key: 'realtime_max_concurrent', value: 1, type: 'number', group: 'Realtime', description: 'Max concurrent users' },
+            { key: 'realtime_max_events_per_sec', value: 1, type: 'number', group: 'Realtime', description: 'Max events per second' },
+            { key: 'realtime_max_channels', value: 1, type: 'number', group: 'Realtime', description: 'Max channels per client' },
+            { key: 'realtime_max_payload_kb', value: 1, type: 'number', group: 'Realtime', description: 'Max payload size (KB)' }
         ];
 
         async function loadSettings() {
