@@ -261,12 +261,13 @@
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
 
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('bookings')">Bookings</button>
-            <button class="nav-tab" onclick="switchTab('images')">Images</button>
-            <button class="nav-tab" onclick="switchTab('settings')">Settings</button>
-        </div>
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchTab('bookings')">Bookings</button>
+                <button class="nav-tab" onclick="switchTab('images')">Images</button>
+                <button class="nav-tab" onclick="switchTab('settings')">Settings</button>
+                <button class="nav-tab" onclick="switchTab('analytics')">Analytics</button>
+            </div>
 
             <!-- Bookings Tab -->
             <div id="tab-bookings" class="tab-content active">
@@ -343,51 +344,14 @@
                  </thead>
                  <tbody id="bookings-tbody">
                  </tbody>
-              </table>
+             </table>
+         </div>
 
-              <!-- Analytics Section -->
-              <div class="analytics-section" style="margin-top: 40px;">
-                  <h3 style="margin-bottom: 20px;">Booking Analytics</h3>
-                  <div class="stats-grid" id="analytics-stats">
-                      <div class="stat-card">
-                          <h3 id="analytics-this-month">0</h3>
-                          <p>This Month</p>
-                      </div>
-                      <div class="stat-card">
-                          <h3 id="analytics-revenue-month">MYR 0</h3>
-                          <p>Revenue This Month</p>
-                      </div>
-                      <div class="stat-card">
-                          <h3 id="analytics-avg-rating">0</h3>
-                          <p>Average Rating</p>
-                      </div>
-                  </div>
-                  <div style="margin-top: 30px;">
-                      <h4 style="margin-bottom: 15px;">Booking Trends</h4>
-                      <div id="booking-trends" style="color: var(--text-muted); font-size: 14px;"></div>
-                  </div>
-              </div>
-          </div>
+         <!-- Images Tab -->
+         <div id="tab-images" class="tab-content">
+             <h3 style="margin-bottom: 20px;">Image Management</h3>
 
-          <!-- Images Tab -->
-          <div id="tab-images" class="tab-content">
-              <h3 style="margin-bottom: 20px;">Image Management</h3>
-
-              <!-- Filter Controls -->
-              <div class="controls">
-                  <select class="filter-select" id="image-type-filter" onchange="filterImages()">
-                      <option value="">All Pages</option>
-                      <option value="hero">Homepage Hero</option>
-                      <option value="gallery">Gallery Page</option>
-                      <option value="thumbnail">Room Thumbnails</option>
-                      <option value="room">Room Pages</option>
-                  </select>
-                  <select class="filter-select" id="image-room-filter" onchange="filterImages()">
-                      <option value="">All Rooms</option>
-                  </select>
-              </div>
-
-              <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+             <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
                  <i class="fas fa-cloud-upload-alt"></i>
                  <p>Click or drag images here to upload</p>
                  <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">JPEG, PNG, WebP, GIF (max 5MB)</p>
@@ -407,7 +371,35 @@
              </div>
          </div>
 
-      </div>
+         <!-- Analytics Tab -->
+         <div id="tab-analytics" class="tab-content">
+             <h3 style="margin-bottom: 20px;">Advanced Analytics</h3>
+             <div class="stats-grid" id="analytics-stats">
+                 <div class="stat-card">
+                     <h3 id="analytics-total-bookings">0</h3>
+                     <p>Total Bookings</p>
+                 </div>
+                 <div class="stat-card">
+                     <h3 id="analytics-this-month">0</h3>
+                     <p>This Month</p>
+                 </div>
+                 <div class="stat-card">
+                     <h3 id="analytics-avg-rating">0</h3>
+                     <p>Average Rating</p>
+                 </div>
+                 <div class="stat-card">
+                     <h3 id="analytics-revenue-month">MYR 0</h3>
+                     <p>Revenue This Month</p>
+                 </div>
+             </div>
+             <div style="margin-top: 30px;">
+                 <h4 style="margin-bottom: 15px;">Booking Trends</h4>
+                 <div id="booking-trends" style="color: var(--text-muted); font-size: 14px;">
+                     <!-- Trends will be displayed here -->
+                 </div>
+             </div>
+         </div>
+     </div>
 
     <!-- Edit Modal -->
     <div class="modal-overlay" id="edit-modal">
@@ -513,22 +505,20 @@
         const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
 
-        // Initialize Supabase client - use different variable name to avoid conflict
+        // Use sbClient to avoid conflict with CDN's supabase variable
         const sbClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        let allBookings = []; // Store all bookings for filtering
-        let allReviews = []; // Store all reviews for analytics
-        let allImages = []; // Store all images
-        let allSettings = []; // Store site settings
+        let allBookings = [];
+        let allReviews = [];
+        let allImages = [];
+        let allSettings = [];
         let currentBookingId = null;
 
-        // Tab switching
         function switchTab(tabName) {
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById('tab-' + tabName).classList.add('active');
-
             if (tabName === 'images') loadImages();
             if (tabName === 'settings') loadSettings();
             if (tabName === 'bookings') updateAnalytics();
@@ -545,28 +535,19 @@
                 .order('display_order', { ascending: true });
             if (error) { console.error('Error loading images:', error); return; }
             allImages = data || [];
-            
-            // Populate room filter
             const roomFilter = document.getElementById('image-room-filter');
             const rooms = [...new Set(allImages.map(img => img.room_name).filter(Boolean))];
             roomFilter.innerHTML = '<option value="">All Rooms</option>' + 
-                rooms.map(r => `<option value="${r}">${r}</option>`).join('');
-            
+                rooms.map(r => '<option value="' + r + '">' + r + '</option>').join('');
             filterImages();
         }
 
         function filterImages() {
             const typeFilter = document.getElementById('image-type-filter').value;
             const roomFilter = document.getElementById('image-room-filter').value;
-            
             let filtered = allImages;
-            if (typeFilter) {
-                filtered = filtered.filter(img => img.image_type === typeFilter);
-            }
-            if (roomFilter) {
-                filtered = filtered.filter(img => img.room_name === roomFilter);
-            }
-            
+            if (typeFilter) filtered = filtered.filter(img => img.image_type === typeFilter);
+            if (roomFilter) filtered = filtered.filter(img => img.room_name === roomFilter);
             displayImages(filtered);
         }
 
@@ -574,16 +555,12 @@
             const images = filteredImages || allImages;
             const grid = document.getElementById('image-grid');
             grid.innerHTML = '';
-            
-            // Group images by type
             const grouped = {};
             images.forEach(img => {
                 const type = img.image_type || 'other';
                 if (!grouped[type]) grouped[type] = [];
                 grouped[type].push(img);
             });
-            
-            // Display groups with headers
             const typeLabels = {
                 'hero': 'Homepage Hero Images',
                 'gallery': 'Gallery Page Images',
@@ -591,30 +568,16 @@
                 'room': 'Room Page Images',
                 'other': 'Other Images'
             };
-            
             Object.keys(grouped).forEach(type => {
-                // Add section header
                 const header = document.createElement('div');
                 header.style = 'grid-column: 1 / -1; margin: 20px 0 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border);';
-                header.innerHTML = `<h4 style="color: var(--accent);">${typeLabels[type] || type}</h4>`;
+                header.innerHTML = '<h4 style="color: var(--accent);">' + (typeLabels[type] || type) + '</h4>';
                 grid.appendChild(header);
-                
-                // Add images in this group
                 grouped[type].forEach(img => {
                     const card = document.createElement('div');
                     card.className = 'image-card';
                     const imageUrl = sbClient.storage.from('studio-images').getPublicUrl(img.file_path).data.publicUrl;
-                    card.innerHTML = `
-                        <img src="${imageUrl}" alt="${img.original_name}">
-                        <div class="overlay">
-                            <button class="btn-icon btn-edit-icon" onclick="editImage('${img.id}')"><i class="fas fa-edit"></i></button>
-                            <button class="btn-icon btn-danger-icon" onclick="deleteImage('${img.id}', '${img.file_path}')"><i class="fas fa-trash"></i></button>
-                        </div>
-                        <div class="info">
-                            <div>${img.original_name}</div>
-                            <div>Room: ${img.room_name || 'N/A'} | Type: ${img.image_type}</div>
-                        </div>
-                    `;
+                    card.innerHTML = '<img src="' + imageUrl + '" alt="' + img.original_name + '"><div class="overlay"><button class="btn-icon btn-edit-icon" onclick="editImage(\'' + img.id + '\')"><i class="fas fa-edit"></i></button><button class="btn-icon btn-danger-icon" onclick="deleteImage(\'' + img.id + "', '" + img.file_path + '\')"><i class="fas fa-trash"></i></button></div><div class="info"><div>' + img.original_name + '</div><div>Room: ' + (img.room_name || 'N/A') + ' | Type: ' + img.image_type + '</div></div>';
                     grid.appendChild(card);
                 });
             });
@@ -623,25 +586,15 @@
         async function handleFileUpload(event) {
             const files = event.target.files;
             if (!files.length) return;
-            
-            // Get selected image type from filter
             const selectedType = document.getElementById('image-type-filter').value || 'gallery';
-            
             for (let file of files) {
                 if (file.size > 5242880) { alert('File too large: ' + file.name); continue; }
-                const filePath = `${Date.now()}_${file.name}`;
-                const { error: uploadError } = await sbClient.storage
-                    .from('studio-images')
-                    .upload(filePath, file);
+                const filePath = Date.now() + '_' + file.name;
+                const { error: uploadError } = await sbClient.storage.from('studio-images').upload(filePath, file);
                 if (uploadError) { alert('Upload failed: ' + uploadError.message); continue; }
                 await sbClient.from('images').insert({
-                    filename: file.name,
-                    original_name: file.name,
-                    file_path: filePath,
-                    file_size: file.size,
-                    mime_type: file.type,
-                    room_name: '',
-                    image_type: selectedType
+                    filename: file.name, original_name: file.name, file_path: filePath,
+                    file_size: file.size, mime_type: file.type, room_name: '', image_type: selectedType
                 });
             }
             alert('Upload complete!');
@@ -660,13 +613,11 @@
             const img = allImages.find(i => i.id === imageId);
             if (!img) return;
             const newRoom = prompt('Room name:', img.room_name || '');
-            const newType = prompt('Image type (gallery/hero/thumbnail):', img.image_type || 'gallery');
+            const newType = prompt('Image type (hero/gallery/thumbnail/room):', img.image_type || 'gallery');
             const newOrder = prompt('Display order:', img.display_order || 0);
             if (newRoom !== null) {
                 await sbClient.from('images').update({
-                    room_name: newRoom,
-                    image_type: newType,
-                    display_order: parseInt(newOrder) || 0
+                    room_name: newRoom, image_type: newType, display_order: parseInt(newOrder) || 0
                 }).eq('id', imageId);
                 loadImages();
             }
@@ -674,112 +625,61 @@
 
         // Settings Management
         const defaultSettings = [
-            // General
-            { key: 'site_title', value: 'Studio Leish', type: 'text', group: 'General', description: 'Website title displayed in browser tab' },
-            { key: 'site_tagline', value: 'Professional Photography Studio', type: 'text', group: 'General', description: 'Tagline shown on homepage' },
-            // Contact
-            { key: 'contact_email', value: 'info@leish.my', type: 'email', group: 'Contact', description: 'Public contact email' },
-            { key: 'contact_phone', value: '+60 12-345 6789', type: 'tel', group: 'Contact', description: 'Public contact phone' },
-            { key: 'studio_address', value: 'Kuala Lumpur, Malaysia', type: 'text', group: 'Contact', description: 'Physical studio address' },
-            // Social
-            { key: 'facebook_url', value: 'https://facebook.com/studioleish', type: 'url', group: 'Social Media', description: 'Facebook page URL' },
-            { key: 'instagram_url', value: 'https://instagram.com/studioleish', type: 'url', group: 'Social Media', description: 'Instagram profile URL' },
-            // Booking
-            { key: 'max_advance_days', value: 90, type: 'number', group: 'Booking', description: 'Max days in advance bookings can be made' },
-            { key: 'cancellation_hours', value: 24, type: 'number', group: 'Booking', description: 'Hours before booking for free cancellation' },
-            { key: 'min_booking_hours', value: 4, type: 'number', group: 'Booking', description: 'Minimum hours notice required for booking' },
-            // Notifications
+            { key: 'site_title', value: 'Studio Leish', type: 'text', group: 'General', description: 'Website title' },
+            { key: 'site_tagline', value: 'Professional Photography Studio', type: 'text', group: 'General', description: 'Tagline' },
+            { key: 'contact_email', value: 'info@leish.my', type: 'email', group: 'Contact', description: 'Public email' },
+            { key: 'contact_phone', value: '+60 12-345 6789', type: 'tel', group: 'Contact', description: 'Public phone' },
+            { key: 'facebook_url', value: 'https://facebook.com/studioleish', type: 'url', group: 'Social Media', description: 'Facebook URL' },
+            { key: 'instagram_url', value: 'https://instagram.com/studioleish', type: 'url', group: 'Social Media', description: 'Instagram URL' },
+            { key: 'max_advance_days', value: 90, type: 'number', group: 'Booking', description: 'Max advance booking days' },
+            { key: 'cancellation_hours', value: 24, type: 'number', group: 'Booking', description: 'Cancellation hours' },
             { key: 'push_enabled', value: true, type: 'boolean', group: 'Notifications', description: 'Enable push notifications' },
-            { key: 'push_new_booking', value: true, type: 'boolean', group: 'Notifications', description: 'Notify on new booking' },
-            { key: 'push_new_review', value: true, type: 'boolean', group: 'Notifications', description: 'Notify on new review' },
-            { key: 'push_payment', value: true, type: 'boolean', group: 'Notifications', description: 'Notify on payment received' }
+            { key: 'push_new_booking', value: true, type: 'boolean', group: 'Notifications', description: 'Notify on new booking' }
         ];
 
         async function loadSettings() {
-            const { data, error } = await sbClient
-                .from('site_settings')
-                .select('*');
+            const { data, error } = await sbClient.from('site_settings').select('*');
             if (error) { console.error('Error loading settings:', error); return; }
-            
             allSettings = data || [];
-            
-            // Add default settings if they don't exist in DB
             for (const def of defaultSettings) {
                 if (!allSettings.find(s => s.setting_key === def.key)) {
-                    allSettings.push({
-                        setting_key: def.key,
-                        setting_value: { value: def.value },
-                        description: def.description,
-                        group: def.group,
-                        type: def.type
-                    });
+                    allSettings.push({ setting_key: def.key, setting_value: { value: def.value }, description: def.description, group: def.group, type: def.type });
                 } else {
-                    // Add group/type info to existing settings
                     const existing = allSettings.find(s => s.setting_key === def.key);
                     existing.group = def.group;
                     existing.type = def.type;
                 }
             }
-            
-            displaySettings();
-        }
-            });
             displaySettings();
         }
 
         function displaySettings() {
             const grid = document.getElementById('settings-grid');
             grid.innerHTML = '';
-            
-            // Group settings by group
             const grouped = {};
             allSettings.forEach(setting => {
                 const group = setting.group || 'Other';
                 if (!grouped[group]) grouped[group] = [];
                 grouped[group].push(setting);
             });
-            
-            // Display each group
             Object.keys(grouped).forEach(groupName => {
-                // Group header
                 const header = document.createElement('div');
                 header.style = 'grid-column: 1 / -1; margin: 20px 0 10px; padding-bottom: 10px; border-bottom: 2px solid var(--accent);';
-                header.innerHTML = `<h4 style="color: var(--accent);">${groupName} Settings</h4>`;
+                header.innerHTML = '<h4 style="color: var(--accent);">' + groupName + ' Settings</h4>';
                 grid.appendChild(header);
-                
-                // Settings in this group
                 grouped[groupName].forEach(setting => {
                     const value = setting.setting_value.value !== undefined ? setting.setting_value.value : setting.setting_value;
                     const type = setting.type || (typeof value === 'boolean' ? 'boolean' : 'text');
-                    
                     const card = document.createElement('div');
                     card.className = 'setting-card';
-                    
                     let inputHtml = '';
                     if (type === 'boolean') {
-                        inputHtml = `
-                            <label class="toggle-switch">
-                                <input type="checkbox" ${value ? 'checked' : ''} onchange="updateSetting('${setting.setting_key}', this.checked)">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        `;
+                        inputHtml = '<label class="toggle-switch"><input type="checkbox" ' + (value ? 'checked' : '') + ' onchange="updateSetting(\'' + setting.setting_key + '\', this.checked)"><span class="toggle-slider"></span></label>';
                     } else {
                         const inputType = type === 'url' ? 'url' : type === 'email' ? 'email' : type === 'number' ? 'number' : 'text';
-                        inputHtml = `
-                            <input type="${inputType}" class="setting-input" value="${typeof value === 'object' ? JSON.stringify(value) : value}"
-                                   onchange="updateSetting('${setting.setting_key}', this.value, '${type}')">
-                        `;
+                        inputHtml = '<input type="' + inputType + '" class="setting-input" value="' + (typeof value === 'object' ? JSON.stringify(value) : value) + '" onchange="updateSetting(\'' + setting.setting_key + '\', this.value, \'' + type + '\')">';
                     }
-                    
-                    card.innerHTML = `
-                        <div class="setting-header">
-                            <div>
-                                <h3 style="margin-bottom: 5px;">${setting.setting_key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
-                                <p style="color: var(--text-muted); font-size: 12px;">${setting.description || ''}</p>
-                            </div>
-                            ${inputHtml}
-                        </div>
-                    `;
+                    card.innerHTML = '<div class="setting-header"><div><h3 style="margin-bottom: 5px;">' + setting.setting_key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</h3><p style="color: var(--text-muted); font-size: 12px;">' + (setting.description || '') + '</p></div>' + inputHtml + '</div>';
                     grid.appendChild(card);
                 });
             });
@@ -787,35 +687,12 @@
 
         async function updateSetting(key, value, type) {
             let parsedValue = value;
-            
-            // Parse based on type
-            if (type === 'number') {
-                parsedValue = parseFloat(value) || 0;
-            } else if (type === 'boolean') {
-                parsedValue = value === true || value === 'true';
-            } else if (typeof value === 'string') {
-                try { parsedValue = JSON.parse(value); } catch(e) { /* keep as string */ }
-            }
-            
-            await sbClient.from('site_settings')
-                .update({ 
-                    setting_value: { value: parsedValue }, 
-                    updated_by: (await sbClient.auth.getUser()).data.user?.id 
-                })
-                .eq('setting_key', key);
+            if (type === 'number') parsedValue = parseFloat(value) || 0;
+            else if (type === 'boolean') parsedValue = value === true || value === 'true';
+            else if (typeof value === 'string') { try { parsedValue = JSON.parse(value); } catch(e) {} }
+            await sbClient.from('site_settings').update({ setting_value: { value: parsedValue }, updated_by: (await sbClient.auth.getUser()).data.user?.id }).eq('setting_key', key);
         }
 
-        // Push Notifications
-        async function sendPushNotification(title, body, url) {
-            // In production, this would trigger via Supabase Edge Function or server
-            alert(`Push Notification:\nTitle: ${title}\nBody: ${body}`);
-            // Store notification in database for logging
-            await sbClient.from('notifications').insert({
-                title, body, url, sent_at: new Date().toISOString()
-            }).catch(() => {}); // Table may not exist
-        }
-
-        // Analytics
         function updateAnalytics() {
             const now = new Date();
             const thisMonth = now.getMonth();
@@ -824,30 +701,18 @@
                 const d = new Date(b.createdAt);
                 return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
             });
-            const thisMonthRevenue = thisMonthBookings
-                .filter(b => b.paymentStatus === 'paid')
-                .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-            const avgRating = allReviews.length > 0
-                ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length).toFixed(1)
-                : '0';
-
-            document.getElementById('analytics-total-bookings').textContent = allBookings.length;
+            const thisMonthRevenue = thisMonthBookings.filter(b => b.paymentStatus === 'paid').reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+            const avgRating = allReviews.length > 0 ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length).toFixed(1) : '0';
             document.getElementById('analytics-this-month').textContent = thisMonthBookings.length;
-            document.getElementById('analytics-avg-rating').textContent = avgRating;
             document.getElementById('analytics-revenue-month').textContent = 'MYR ' + thisMonthRevenue;
-
-            // Booking trends
+            document.getElementById('analytics-avg-rating').textContent = avgRating;
             const trendsDiv = document.getElementById('booking-trends');
             const roomCounts = {};
             allBookings.forEach(b => { roomCounts[b.room] = (roomCounts[b.room] || 0) + 1; });
             const topRooms = Object.entries(roomCounts).sort((a,b) => b[1]-a[1]).slice(0,3);
-            trendsDiv.innerHTML = `
-                <p><strong>Top 3 Rooms:</strong> ${topRooms.map((r,i) => `${i+1}. ${r[0]} (${r[1]} bookings)`).join(' | ')}</p>
-                <p style="margin-top:10px;"><strong>Total Reviews:</strong> ${allReviews.length} | <strong>Avg Rating:</strong> ${avgRating}/5</p>
-            `;
+            trendsDiv.innerHTML = '<p><strong>Top 3 Rooms:</strong> ' + topRooms.map((r,i) => (i+1) + '. ' + r[0] + ' (' + r[1] + ' bookings)').join(' | ') + '</p><p style="margin-top:10px;"><strong>Total Reviews:</strong> ' + allReviews.length + ' | <strong>Avg Rating:</strong> ' + avgRating + '/5</p>';
         }
 
-        // Check if already logged in
         (async function() {
             const { data: { session } } = await sbClient.auth.getSession();
             if (session) showDashboard();
@@ -858,133 +723,64 @@
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('login-error');
             const loginBtn = document.querySelector('#login-form .btn');
-
-            if (!email || !password) {
-                errorDiv.textContent = 'Please enter email and password';
-                return;
-            }
-
-            // Show loading state
+            if (!email || !password) { errorDiv.textContent = 'Please enter email and password'; return; }
             loginBtn.textContent = 'Signing in...';
             loginBtn.disabled = true;
             errorDiv.textContent = '';
-
             const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                loginBtn.textContent = 'Sign In';
-                loginBtn.disabled = false;
-                errorDiv.textContent = error.message;
-                console.error('Login error:', error);
-                return;
-            }
-
-            console.log('Login successful:', data);
+            if (error) { loginBtn.textContent = 'Sign In'; loginBtn.disabled = false; errorDiv.textContent = error.message; return; }
             errorDiv.style.color = 'var(--success)';
             errorDiv.textContent = 'Login successful! Redirecting...';
-
             showDashboard();
         }
 
-        function logout() {
-            sbClient.auth.signOut();
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('login-form').style.display = 'block';
-        }
-
-        function showDashboard() {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            loadBookings(); // This now loads bookings, reviews, images, and settings
-        }
+        function logout() { sbClient.auth.signOut(); document.getElementById('dashboard').style.display = 'none'; document.getElementById('login-form').style.display = 'block'; }
+        function showDashboard() { document.getElementById('login-form').style.display = 'none'; document.getElementById('dashboard').style.display = 'block'; loadBookings(); }
 
         async function loadBookings() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('bookings-table').style.display = 'none';
             document.getElementById('empty-state').style.display = 'none';
-
-            // Fetch bookings and reviews in parallel
             const [bookingsRes, reviewsRes] = await Promise.all([
                 sbClient.from('bookings').select('*').order('createdAt', { ascending: false }).limit(100),
                 sbClient.from('reviews').select('*')
             ]);
-
-            if (bookingsRes.error) {
-                console.error('Error loading bookings:', bookingsRes.error);
-                return;
-            }
-
+            if (bookingsRes.error) { console.error('Error loading bookings:', bookingsRes.error); return; }
             allBookings = bookingsRes.data || [];
             allReviews = reviewsRes.data || [];
             document.getElementById('loading').style.display = 'none';
-
-            if (allBookings.length === 0) {
-                document.getElementById('empty-state').style.display = 'block';
-                return;
-            }
-
+            if (allBookings.length === 0) { document.getElementById('empty-state').style.display = 'block'; return; }
             updateStats();
-            filterBookings(); // Initial display with all bookings
+            filterBookings();
         }
 
         function updateStats() {
             const total = allBookings.length;
             const pending = allBookings.filter(b => b.status === 'pending').length;
             const confirmed = allBookings.filter(b => b.status === 'confirmed').length;
-            const revenue = allBookings
-                .filter(b => b.paymentStatus === 'paid')
-                .reduce((sum, b) => sum + (b.totalAmount || 0),0);
-
-            // Review stats
-            const avgRating = allReviews.length > 0 
-                ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length).toFixed(1) 
-                : '0';
+            const revenue = allBookings.filter(b => b.paymentStatus === 'paid').reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+            const avgRating = allReviews.length > 0 ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length).toFixed(1) : '0';
             const totalReviews = allReviews.length;
-
-            // Top booked room
             const roomCounts = {};
-            allBookings.forEach(b => {
-                const room = b.room || 'Unknown';
-                roomCounts[room] = (roomCounts[room] || 0) + 1;
-            });
+            allBookings.forEach(b => { const room = b.room || 'Unknown'; roomCounts[room] = (roomCounts[room] || 0) + 1; });
             const topRoom = Object.entries(roomCounts).sort((a,b) => b[1] - a[1])[0];
-            const topRoomName = topRoom ? topRoom[0] : '-';
-
             document.getElementById('total-bookings').textContent = total;
             document.getElementById('pending-bookings').textContent = pending;
             document.getElementById('confirmed-bookings').textContent = confirmed;
             document.getElementById('total-revenue').textContent = 'MYR ' + revenue;
             document.getElementById('avg-rating').textContent = avgRating;
             document.getElementById('total-reviews').textContent = totalReviews;
-            document.getElementById('top-room').textContent = topRoomName;
+            document.getElementById('top-room').textContent = topRoom ? topRoom[0] : '-';
         }
 
         function filterBookings() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const statusFilter = document.getElementById('status-filter').value;
             const paymentFilter = document.getElementById('payment-filter').value;
-
             let filtered = allBookings;
-
-            // Apply search
-            if (searchTerm) {
-                filtered = filtered.filter(b =>
-                    (b.booking_id && b.booking_id.toLowerCase().includes(searchTerm)) ||
-                    (b.clientName && b.clientName.toLowerCase().includes(searchTerm)) ||
-                    (b.clientEmail && b.clientEmail.toLowerCase().includes(searchTerm))
-                );
-            }
-
-            // Apply status filter
-            if (statusFilter) {
-                filtered = filtered.filter(b => b.status === statusFilter);
-            }
-
-            // Apply payment filter
-            if (paymentFilter) {
-                filtered = filtered.filter(b => b.paymentStatus === paymentFilter);
-            }
-
+            if (searchTerm) filtered = filtered.filter(b => (b.booking_id && b.booking_id.toLowerCase().includes(searchTerm)) || (b.clientName && b.clientName.toLowerCase().includes(searchTerm)) || (b.clientEmail && b.clientEmail.toLowerCase().includes(searchTerm)));
+            if (statusFilter) filtered = filtered.filter(b => b.status === statusFilter);
+            if (paymentFilter) filtered = filtered.filter(b => b.paymentStatus === paymentFilter);
             displayBookings(filtered);
         }
 
@@ -992,35 +788,12 @@
             const tbody = document.getElementById('bookings-tbody');
             const table = document.getElementById('bookings-table');
             const emptyState = document.getElementById('empty-state');
-
             tbody.innerHTML = '';
-
-            if (bookings.length === 0) {
-                table.style.display = 'none';
-                emptyState.style.display = 'block';
-                return;
-            }
-
+            if (bookings.length === 0) { table.style.display = 'none'; emptyState.style.display = 'block'; return; }
             table.style.display = 'table';
-
             bookings.forEach(booking => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${booking.booking_id || '-'}</td>
-                    <td>${booking.clientName || '-'}</td>
-                    <td>${booking.clientEmail || '-'}</td>
-                    <td>${booking.room || '-'}</td>
-                    <td>${booking.date || '-'}</td>
-                    <td>${booking.time || '-'}</td>
-                    <td>MYR ${booking.totalAmount || 0}</td>
-                    <td><span class="status ${booking.status}">${booking.status}</span></td>
-                    <td><span class="status ${booking.paymentStatus === 'paid' ? 'confirmed' : 'pending'}">${booking.paymentStatus || 'pending'}</span></td>
-                    <td>
-                        <button class="edit-btn" onclick="openEditModal('${booking.booking_id}')">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                    </td>
-                `;
+                row.innerHTML = '<td>' + (booking.booking_id || '-') + '</td><td>' + (booking.clientName || '-') + '</td><td>' + (booking.clientEmail || '-') + '</td><td>' + (booking.room || '-') + '</td><td>' + (booking.date || '-') + '</td><td>' + (booking.time || '-') + '</td><td>MYR ' + (booking.totalAmount || 0) + '</td><td><span class="status ' + booking.status + '">' + booking.status + '</span></td><td><span class="status ' + (booking.paymentStatus === 'paid' ? 'confirmed' : 'pending') + '">' + (booking.paymentStatus || 'pending') + '</span></td><td><button class="edit-btn" onclick="openEditModal(\'' + booking.booking_id + '\')"><i class="fas fa-edit"></i> Edit</button></td>';
                 tbody.appendChild(row);
             });
         }
@@ -1028,13 +801,7 @@
         async function openEditModal(bookingId) {
             currentBookingId = bookingId;
             const booking = allBookings.find(b => b.booking_id === bookingId);
-
-            if (!booking) {
-                alert('Booking not found');
-                return;
-            }
-
-            // Populate modal fields
+            if (!booking) { alert('Booking not found'); return; }
             document.getElementById('edit-booking-id').value = booking.booking_id || '';
             document.getElementById('edit-client-name').value = booking.clientName || '';
             document.getElementById('edit-client-email').value = booking.clientEmail || '';
@@ -1050,19 +817,13 @@
             document.getElementById('edit-addons').value = booking.addons ? JSON.stringify(booking.addons) : '';
             document.getElementById('edit-review-comment').value = booking.review_comment || '';
             document.getElementById('edit-notes').value = booking.adminNotes || '';
-
-            // Show modal
             document.getElementById('edit-modal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('edit-modal').style.display = 'none';
-            currentBookingId = null;
-        }
+        function closeModal() { document.getElementById('edit-modal').style.display = 'none'; currentBookingId = null; }
 
         async function saveChanges() {
             if (!currentBookingId) return;
-
             const updatedData = {
                 clientName: document.getElementById('edit-client-name').value,
                 clientEmail: document.getElementById('edit-client-email').value,
@@ -1078,64 +839,30 @@
                 review_comment: document.getElementById('edit-review-comment').value,
                 adminNotes: document.getElementById('edit-notes').value
             };
-
-            // Parse add-ons
             try {
                 const addonsText = document.getElementById('edit-addons').value;
-                if (addonsText.trim()) {
-                    updatedData.addons = JSON.parse(addonsText);
-                }
-            } catch (e) {
-                alert('Invalid JSON in Add-ons field');
-                return;
-            }
-
-            const { error } = await supabase
-                .from('bookings')
-                .update(updatedData)
-                .eq('booking_id', currentBookingId);
-
-            if (error) {
-                alert('Error saving changes: ' + error.message);
-                return;
-            }
-
+                if (addonsText.trim()) updatedData.addons = JSON.parse(addonsText);
+            } catch (e) { alert('Invalid JSON in Add-ons field'); return; }
+            const { error } = await sbClient.from('bookings').update(updatedData).eq('booking_id', currentBookingId);
+            if (error) { alert('Error saving changes: ' + error.message); return; }
             alert('Booking updated successfully!');
             closeModal();
-            loadBookings(); // Reload
+            loadBookings();
         }
 
         async function deleteBooking() {
             if (!currentBookingId) return;
-
-            if (!confirm('Are you sure you want to DELETE this booking? This cannot be undone.')) {
-                return;
-            }
-
-            const { error } = await supabase
-                .from('bookings')
-                .delete()
-                .eq('booking_id', currentBookingId);
-
-            if (error) {
-                alert('Error deleting booking: ' + error.message);
-                return;
-            }
-
+            if (!confirm('Are you sure you want to DELETE this booking? This cannot be undone.')) return;
+            const { error } = await sbClient.from('bookings').delete().eq('booking_id', currentBookingId);
+            if (error) { alert('Error deleting booking: ' + error.message); return; }
             alert('Booking deleted successfully!');
             closeModal();
-            loadBookings(); // Reload
+            loadBookings();
         }
 
-        // Close modal on overlay click
-        document.getElementById('edit-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
+        document.getElementById('edit-modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
 
-        // Close modal on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeModal();
-        });
     </script>
 </body>
 </html>
