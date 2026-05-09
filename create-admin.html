@@ -80,8 +80,7 @@
     <script>
         const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
-        const supabaseLib = window.supabase || window.Supabase || window._supabase;
-        const supabase = supabaseLib ? supabaseLib.createClient(supabaseUrl, supabaseKey) : null;
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
         
         async function createAdmin() {
             const email = document.getElementById('email').value;

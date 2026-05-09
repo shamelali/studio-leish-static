@@ -1138,6 +1138,35 @@ if (authParam) {
     if (time) { setTimeout(() => { document.querySelectorAll('.time-slot').forEach(s => { if (s.textContent.trim() === time) s.click(); }); }, 50); }
 })();
 
+// Load room images from Supabase site_images table
+async function loadRoomImages() {
+    try {
+        const { data, error } = await supabaseClient.from('site_images').select('*').in('slot', [6, 7, 8, 9]).order('slot', { ascending: true });
+        
+        if (error) throw error;
+        if (!data || data.length === 0) return;
+        
+        // Map slot to room card
+        const roomCards = document.querySelectorAll('.room-card');
+        data.forEach(img => {
+            if (!img.image_url) return;
+            
+            // Slot 6 = Creative Studio, Slot 7 = Makeup Suite, Slot 8 = Studio, Slot 9 = Classroom
+            const roomNames = ['Creative Studio', 'Makeup Station', 'Studio Space', 'Classroom'];
+            const roomName = roomNames[img.slot - 6];
+            
+            if (roomName) {
+                roomCards.forEach(card => {
+                    if (card.querySelector('.room-name')?.textContent === roomName) {
+                        card.querySelector('.room-icon').innerHTML = `<img src="${img.image_url}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none'">`;
+                    }
+                });
+            }
+        });
+    } catch(e) { console.warn('Room images:', e.message); }
+}
+loadRoomImages();
+
 }); // end DOMContentLoaded
 </script>
 </body>
