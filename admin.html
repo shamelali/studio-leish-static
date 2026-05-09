@@ -743,6 +743,42 @@ function showPage(page) {
 async function loadAllData() {
     await Promise.all([loadBookings(), loadClients(), loadRooms(), loadImages()]);
     renderCalendar();
+    enableRealtimeSync();
+}
+
+// Real-time sync
+let realtimeEnabled = false;
+function enableRealtimeSync() {
+    if (realtimeEnabled) return;
+    realtimeEnabled = true;
+    
+    // Subscribe to bookings changes
+    sbClient.channel('admin-bookings')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
+            console.log('Booking change detected:', payload);
+            loadBookings();
+            showToast('New booking detected!', 'success');
+        })
+        .subscribe();
+    
+    // Subscribe to site_settings changes (room names, prices)
+    sbClient.channel('admin-settings')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, (payload) => {
+            console.log('Settings change detected:', payload);
+            loadRooms();
+        })
+        .subscribe();
+    
+    // Subscribe to site_images changes
+    sbClient.channel('admin-images')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'site_images' }, (payload) => {
+            console.log('Image change detected:', payload);
+            loadImages();
+        })
+        .subscribe();
+    
+    console.log('Real-time sync enabled');
+    showToast('Real-time sync enabled', 'success');
 }
 
 async function loadBookings() {
