@@ -1,5 +1,9 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/admin", "dest": "/admin-enhanced.html" },
+    { "src": "/user", "dest": "/user.html" },
+    { "src": "/book", "dest": "/book.html" },
+    { "src": "/dashboard", "dest": "/user-dashboard.html" }
   ]
 }
