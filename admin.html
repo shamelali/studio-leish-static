@@ -865,15 +865,24 @@ async function loadImages() {
     const images = data || [];
     
     let html = '';
-    slots.forEach((s, i) => {
+    slots.forEach(async (s, i) => {
         const img = images.find(x => x.slot === i);
+        let fileSize = '';
+        if (img?.storage_path) {
+            try {
+                const { data: meta } = await sbClient.storage.from('studio-images').getMetadata(img.storage_path.split('/').pop());
+                if (meta?.size) {
+                    fileSize = formatBytes(meta.size);
+                }
+            } catch(e) { /* ignore */ }
+        }
         html += `
             <div class="card" style="display:flex;gap:16px;align-items:center;padding:16px;">
                 <div style="width:80px;height:80px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
                     ${img?.image_url ? '<img src="' + img.image_url + '" style="width:100%;height:100%;object-fit:cover;">' : '<i class="fas ' + s.icon + '" style="font-size:24px;color:var(--text-muted);"></i>'}
                 </div>
                 <div style="flex:1;">
-                    <div style="font-weight:600;margin-bottom:4px;">${s.name}</div>
+                    <div style="font-weight:600;margin-bottom:4px;">${s.name} ${fileSize ? '<span style="font-size:11px;color:var(--text-muted);margin-left:8px;">(' + fileSize + ')</span>' : ''}</div>
                     <input type="text" id="img-url-${i}" value="${img?.image_url || ''}" placeholder="Paste image URL here..." style="width:100%;padding:10px;background:var(--primary);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;">
                 </div>
                 <label style="cursor:pointer;padding:10px 16px;background:var(--secondary);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;white-space:nowrap;">
@@ -885,6 +894,13 @@ async function loadImages() {
     });
     
     document.getElementById('images-list').innerHTML = html;
+}
+
+function formatBytes(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(2) + ' MB';
 }
 
 function previewImage(slot, input) {
