@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
     const { room, limit = 10 } = req.query;
 
     let query = supabase
-      .from('Review')
+      .from('reviews')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(parseInt(limit));

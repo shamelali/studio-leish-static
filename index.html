@@ -1520,10 +1520,10 @@
         async function loadReviews() {
             try {
                 const { data: reviews, error } = await supabaseClient
-                    .from('bookings')
-                    .select('rating, review_comment, client_name, booking_date')
-                    .not('rating', 'is', null)
-                    .order('booking_date', { ascending: false })
+                    .from('reviews')
+                    .select('rating, comment, client_email, created_at, room')
+                    .eq('is_active', true)
+                    .order('created_at', { ascending: false })
                     .limit(6);
 
                 if (error) throw error;
@@ -1539,8 +1539,8 @@
                         <div style="margin-bottom: 12px;">
                             ${Array(5).fill(0).map((_, i) => `<i class="fas fa-star" style="color: ${i < r.rating ? 'var(--gold)' : 'var(--border)'}"></i>`).join('')}
                         </div>
-                        <p style="color: var(--text); margin-bottom: 12px;">${r.review_comment || 'Great experience!'}</p>
-                        <p style="color: var(--text-muted); font-size: 0.85rem;">— ${r.client_name || 'Anonymous'}</p>
+                        <p style="color: var(--text); margin-bottom: 12px;">${r.comment || 'Great experience!'}</p>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">— ${r.client_email || 'Anonymous'}</p>
                     </div>
                 `).join('');
             } catch (err) {

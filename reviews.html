@@ -139,7 +139,7 @@
 
         async function loadReviews() {
             const { data: reviews, error } = await supabase
-                .from('Review')
+                .from('reviews')
                 .select('*')
                 .order('created_at', { ascending: false })
                 .limit(50);
