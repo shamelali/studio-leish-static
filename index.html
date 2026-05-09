@@ -1384,9 +1384,9 @@
                 // Slot 5: Logo
                 const logoImg = data.find(x => x.slot === 5);
                 if (logoImg?.image_url) {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + logoImg.image_url + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + logoImg.image_url + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent;">';
                 } else {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent;">';
                 }
                 
                 // Slot 0: Hero Image
@@ -1408,7 +1408,7 @@
                     loadGalleryImages(galleryImages);
                 }
             } else {
-                document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px;">';
+                document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent;">';
             }
         });
         
