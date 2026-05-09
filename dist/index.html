@@ -1380,7 +1380,7 @@
             if (data) {
                 data.forEach(setting => {
                     if (setting.key === 'logo_url' && setting.value) {
-                        document.getElementById('logoIcon').innerHTML = '<img src="' + setting.value + '" style="width: 40px; height: 40px; object-fit: contain;">';
+                        document.getElementById('logoIcon').innerHTML = '<img src="' + setting.value + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px;">';
                         logoSet = true;
                     }
                     if (setting.key === 'hero_image_url' && setting.value) {
@@ -1395,7 +1395,7 @@
                     }
                 });
                 if (!logoSet) {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 40px; height: 40px; object-fit: contain;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px;">';
                 }
             }
         });
