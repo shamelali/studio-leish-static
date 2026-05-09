@@ -1,5 +1,5 @@
 # Studio Leish URL Redirects
-/admin    /admin.html   200
+/admin    /admin-enhanced.html   200
 /user     /user.html    200
 /book     /book.html    200
 /dashboard /user-dashboard.html 200
