@@ -790,7 +790,47 @@ async function loadRooms() {
                 if (rooms[idx]) {
                     rooms[idx].price = priceData.price || rooms[idx].price;
                     rooms[idx].desc = priceData.desc || rooms[idx].desc;
+                    if (priceData.name) rooms[idx].name = priceData.name;
                 }
+            }
+        });
+    }
+    
+    document.getElementById('rooms-grid').innerHTML = rooms.map((r, i) => `
+        <div class="card">
+            <h3 id="room-name-${i}">${r.name}</h3>
+            <div style="font-size: 28px; font-weight: 700; color: var(--accent); margin: 10px 0;">MYR <span id="room-price-${i}">${r.price}</span>/hr</div>
+            <p style="color: var(--text-muted); font-size: 13px;" id="room-desc-${i}">${r.desc}</p>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <button class="btn btn-secondary btn-sm" onclick="openRoomModal(${i})">Edit</button>
+            </div>
+        </div>
+    `);
+}
+
+async function openRoomModal(idx) {
+    const { data } = await sbClient.from('site_settings').select('value').eq('key', `room_${idx}`).single();
+    let room = { name: ['Makeup Studio', 'Content Creation Room', 'Classroom'][idx], price: [80, 120, 60][idx], desc: ['Professional makeup station', 'Photo/video studio', 'Training space'][idx] };
+    if (data?.value) room = { ...room, ...JSON.parse(data.value) };
+    
+    const newName = prompt('Enter room name:', room.name);
+    if (newName === null) return;
+    
+    const newPrice = prompt('Enter price (MYR/hr):', room.price);
+    if (newPrice === null) return;
+    
+    const newDesc = prompt('Enter description:', room.desc);
+    if (newDesc === null) return;
+    
+    await sbClient.from('site_settings').upsert({ 
+        key: `room_${idx}`, 
+        value: JSON.stringify({ name: newName, price: parseInt(newPrice) || room.price, desc: newDesc })
+    }, { onConflict: 'key' });
+    
+    showToast('Room updated successfully!');
+    loadRooms();
+    loadBookings();
+}
             }
         });
     }
