@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
 
     // Insert review
     const { data, error } = await supabase
-      .from('Review')
+      .from('reviews')
       .insert([{
         booking_id,
         client_email,
@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
 
     // Also update the booking with rating
     await supabase
-      .from('Booking')
+      .from('bookings')
       .update({ 
         rating: rating,
         review_comment: comment 

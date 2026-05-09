@@ -208,7 +208,7 @@
                 if (!email) return;
                 
                 const { data: booking } = await supabase
-                    .from('Booking')
+                    .from('bookings')
                     .select('*')
                     .eq('booking_id', bookingId)
                     .eq('client_email', email)
@@ -222,7 +222,7 @@
                 await submitReview(booking);
             } else {
                 const { data: booking } = await supabase
-                    .from('Booking')
+                    .from('bookings')
                     .select('*')
                     .eq('booking_id', bookingId)
                     .single();

@@ -1520,7 +1520,7 @@
         async function loadReviews() {
             try {
                 const { data: reviews, error } = await supabaseClient
-                    .from('Booking')
+                    .from('bookings')
                     .select('rating, review_comment, client_name, booking_date')
                     .not('rating', 'is', null)
                     .order('booking_date', { ascending: false })

@@ -19,12 +19,12 @@ module.exports = async (req, res) => {
 
     // 1. Total bookings
     const { count: totalBookings } = await supabase
-      .from('Booking')
+      .from('bookings')
       .select('*', { count: 'exact', head: true });
 
     // 2. Bookings by status
     const { data: statusData } = await supabase
-      .from('Booking')
+      .from('bookings')
       .select('status');
 
     const statusCounts = {};
@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
 
     // 3. Revenue by status (confirmed/completed)
     const { data: revenueData } = await supabase
-      .from('Booking')
+      .from('bookings')
       .select('total_amount, status')
       .in('status', ['confirmed', 'completed']);
 
@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
 
     // 4. Bookings by room
     const { data: roomData } = await supabase
-      .from('Booking')
+      .from('bookings')
       .select('room');
 
     const roomCounts = {};
@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
 
     // 5. Bookings by day of week
     const { data: dateData } = await supabase
-      .from('Booking')
+      .from('bookings')
       .select('booking_date');
 
     const dayCounts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
     const { data: trendData } = await supabase
-      .from('Booking')
+      .from('bookings')
       .select('booking_date, total_amount')
       .gte('booking_date', sixMonthsAgo.toISOString().split('T')[0]);
 
@@ -87,7 +87,7 @@ module.exports = async (req, res) => {
 
     // 7. Average rating
     const { data: reviewData } = await supabase
-      .from('Review')
+      .from('reviews')
       .select('rating');
 
     const avgRating = reviewData?.length 
