@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My Bookings | Studio Leish</title>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/@supabaseClient/supabaseClient-js@2"></script>
+        <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+            --text-muted: #8892b0;
+            --border: #2a2a4a;
+            --success: #00d9a5;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 30px;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
+
+        .logout-btn { padding: 8px 16px; background: var(--secondary); color: var(--text); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+
+        .welcome { margin-bottom: 30px; }
+        .welcome h2 { font-size: 1.8rem; margin-bottom: 5px; }
+        .welcome p { color: var(--text-muted); font-size: 14px; }
+
+        .bookings-list { display: grid; gap: 20px; }
+        .booking-card {
+            background: var(--secondary); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; display: grid;
+            grid-template-columns: 1fr auto; gap: 10px;
+        }
+        .booking-info h3 { font-size: 1.1rem; margin-bottom: 5px; }
+        .booking-info p { color: var(--text-muted); font-size: 14px; margin-bottom: 5px; }
+        .booking-status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .status-pending { background: rgba(244, 208, 63, 0.2); color: var(--gold); }
+        .status-confirmed { background: rgba(0, 217, 165, 0.2); color: var(--success); }
+        .status-cancelled { background: rgba(233, 69, 96, 0.2); color: var(--accent); }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 20px; }
+        .empty-state p { margin-bottom: 20px; }
+
+        .btn {
+            padding: 10px 20px; background: var(--accent); color: white;
+            border: none; border-radius: 6px; cursor: pointer; font-size: 14px;
+        }
+
+        .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+
+        /* Review Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .modal { background: var(--secondary); border: 1px solid var(--border); border-radius: 16px; padding: 30px; width: 90%; max-width: 500px; }
+        .modal h3 { margin-bottom: 20px; }
+        .star-rating { display: flex; gap: 8px; margin-bottom: 20px; }
+        .star { font-size: 2rem; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+        .star.active { color: var(--gold); }
+        .review-text { width: 100%; height: 120px; background: var(--primary); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); resize: vertical; margin-bottom: 20px; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-secondary { background: var(--primary); border: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo" onclick="window.location.href='index.html'">Studio Leish</div>
+            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+
+        <div class="welcome">
+            <h2 id="user-name">Welcome back!</h2>
+            <p>Here are your upcoming bookings</p>
+        </div>
+
+        <div class="loading" id="loading">Loading your bookings...</div>
+
+        <div class="bookings-list" id="bookings-list" style="display: none;"></div>
+
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <i class="fas fa-calendar-check"></i>
+            <p>No upcoming bookings.</p>
+            <button class="btn" onclick="window.location.href='book.html'">Book a Session</button>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal-overlay" id="review-modal">
+        <div class="modal">
+            <h3>Write a Review</h3>
+            <div class="star-rating" id="star-rating">
+                <span class="star" data-rating="1">☆</span>
+                <span class="star" data-rating="2">☆</span>
+                <span class="star" data-rating="3">☆</span>
+                <span class="star" data-rating="4">☆</span>
+                <span class="star" data-rating="5">☆</span>
+            </div>
+            <textarea class="review-text" id="review-comment" placeholder="Share your experience..."></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+                <button class="btn" onclick="submitReview()">Submit Review</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabaseClient.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
+        const supabaseLib = window.supabaseClient || window.Supabase || window._supabase;
+        const supabaseClient = supabaseLib ? supabaseLib.createClient(supabaseUrl, supabaseKey) : null;
+
+        let currentBookingId = null;
+        let currentRating = 0;
+        let currentUser = null;
+        let isGoogleAuth = false;
+
+        // Star rating setup
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                currentRating = parseInt(this.dataset.rating);
+                document.querySelectorAll('.star').forEach(s => {
+                    s.textContent = parseInt(s.dataset.rating) <= currentRating ? '★' : '☆';
+                    s.classList.toggle('active', parseInt(s.dataset.rating) <= currentRating);
+                });
+            });
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const authParam = urlParams.get('auth');
+
+        if (authParam) {
+            try {
+                const googleUser = JSON.parse(atob(authParam));
+                sessionStorage.setItem('googleUser', JSON.stringify(googleUser));
+            } catch (e) {
+                console.warn('Failed to parse auth param:', e);
+            }
+        }
+
+        (async function() {
+            // Check for Google OAuth auth param (base64 encoded user info)
+            if (authParam) {
+                try {
+                    const userInfo = JSON.parse(atob(authParam));
+                    const email = userInfo.email;
+                    const name = userInfo.name || userInfo.given_name + ' ' + userInfo.family_name;
+                    document.getElementById('user-name').textContent = `Welcome back, ${name}!`;
+                    loadBookings(email);
+                    return;
+                } catch (e) {
+                    console.error('Failed to parse auth param:', e);
+                }
+            }
+
+            // Fall back to Supabase session
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = 'user.html';
+                return;
+            }
+
+            // Get user details from users table
+            const { data: userData } = await supabaseClient
+                .from('users')
+                .select('name')
+                .eq('id', session.user.id)
+                .single();
+
+            if (userData) {
+                document.getElementById('user-name').textContent = `Welcome back, ${userData.name}!`;
+            } else {
+                document.getElementById('user-name').textContent = `Welcome back!`;
+            }
+
+            loadBookings(session.user.email);
+        })();
+
+        async function loadBookings(userEmail) {
+            const [bookingsRes, reviewsRes] = await Promise.all([
+                supabaseClient.from('bookings').select('*').eq('clientEmail', userEmail).order('date', { ascending: true }),
+                supabaseClient.from('reviews').select('booking_id').eq('client_email', userEmail)
+            ]);
+
+            document.getElementById('loading').style.display = 'none';
+
+            if (bookingsRes.error) {
+                console.error('Error loading bookings:', bookingsRes.error);
+                return;
+            }
+
+            const bookings = bookingsRes.data || [];
+            const reviewedBookingIds = new Set((reviewsRes.data || []).map(r => r.booking_id));
+
+            const activeBookings = bookings.filter(b =>
+                b.status === 'pending' || b.status === 'confirmed'
+            );
+
+            if (activeBookings.length === 0) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const list = document.getElementById('bookings-list');
+            list.style.display = 'grid';
+
+            activeBookings.forEach(booking => {
+                const card = document.createElement('div');
+                card.className = 'booking-card';
+                const hasReviewed = reviewedBookingIds.has(booking.id);
+                const canReview = ['confirmed', 'completed'].includes(booking.status) && !hasReviewed;
+
+                card.innerHTML = `
+                    <div class="booking-info">
+                        <h3>${booking.room || 'Booking'}</h3>
+                        <p><i class="far fa-calendar"></i> ${booking.date || 'N/A'} at ${booking.time || 'N/A'}</p>
+                        <p><i class="far fa-clock"></i> ${booking.sessionType || 'N/A'}</p>
+                        <p><strong>MYR ${booking.totalAmount || 0}</strong></p>
+                        ${canReview ? `<button class="btn" style="margin-top:10px;" onclick="openReviewModal('${booking.id}', '${booking.room}')">Write Review</button>` : ''}
+                        ${hasReviewed ? '<span style="color:var(--success);font-size:14px;"><i class="fas fa-check-circle"></i> Reviewed</span>' : ''}
+                    </div>
+                    <div>
+                        <span class="booking-status status-${booking.status || 'pending'}">${booking.status || 'pending'}</span>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function openReviewModal(bookingId, room) {
+            currentBookingId = bookingId;
+            currentRating = 0;
+            document.querySelectorAll('.star').forEach(s => { s.textContent = '☆'; s.classList.remove('active'); });
+            document.getElementById('review-comment').value = '';
+            document.querySelector('#review-modal h3').textContent = `Write a Review for ${room}`;
+            document.getElementById('review-modal').style.display = 'flex';
+        }
+
+        function closeReviewModal() {
+            document.getElementById('review-modal').style.display = 'none';
+            currentBookingId = null;
+        }
+
+        async function submitReview() {
+            if (currentRating === 0) { alert('Please select a rating'); return; }
+            const comment = document.getElementById('review-comment').value.trim();
+
+            const clientEmail = currentUser ? currentUser.email : null;
+            if (!clientEmail) { alert('User not authenticated'); return; }
+
+            const room = document.querySelector('#review-modal h3').textContent.replace('Write a Review for ', '');
+
+            const { error } = await supabaseClient.from('reviews').insert({
+                booking_id: currentBookingId,
+                client_email: clientEmail,
+                room: room,
+                rating: currentRating,
+                comment: comment || null
+            });
+
+            if (error) { alert('Error submitting review: ' + error.message); return; }
+            alert('Review submitted successfully!');
+            closeReviewModal();
+            loadBookings(clientEmail);
+        }
+
+        async function logout() {
+            try {
+                if (isGoogleAuth) {
+                    // For Google OAuth users, redirect without auth param
+                    window.location.href = 'user.html';
+                    return;
+                }
+                await supabaseClient.auth.signOut();
+            } catch (e) {
+                console.error('Logout error:', e);
+            }
+            window.location.href = 'user.html';
+        }
+    </script>
+</body>
+</html>

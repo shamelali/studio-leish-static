@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Review - Studio Leish</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #1a1a1a;
+            --bg-card: #242424;
+            --text-primary: #f5f5f5;
+            --text-secondary: #aaa;
+            --gold: #c9a96e;
+            --gold-light: #e5d3a7;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--gold);
+        }
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+        .form-card {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .star-rating {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .star-rating button {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #444;
+            transition: color 0.2s;
+        }
+        .star-rating button.active {
+            color: var(--gold);
+        }
+        .star-rating button:hover {
+            color: var(--gold-light);
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--gold);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: var(--gold-light);
+        }
+        .btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .message.success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        .message.error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+        .nav {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .nav a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Rate Your Experience</h1>
+        <p class="subtitle">Tell us about your session at Studio Leish</p>
+
+        <div id="message"></div>
+
+        <div class="form-card">
+            <form id="reviewForm">
+                <div class="form-group">
+                    <label>Your Rating</label>
+                    <div class="star-rating" id="starRating">
+                        <button type="button" data-rating="1">★</button>
+                        <button type="button" data-rating="2">★</button>
+                        <button type="button" data-rating="3">★</button>
+                        <button type="button" data-rating="4">★</button>
+                        <button type="button" data-rating="5">★</button>
+                    </div>
+                    <input type="hidden" id="rating" name="rating" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="comment">Your Review (optional)</label>
+                    <textarea id="comment" name="comment" placeholder="Share your experience..."></textarea>
+                </div>
+
+                <button type="submit" class="btn" id="submitBtn">Submit Review</button>
+            </form>
+        </div>
+
+        <nav class="nav">
+            <a href="index.html">← Back to Home</a>
+        </nav>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = urlParams.get('booking_id');
+
+        let selectedRating = 0;
+
+        document.querySelectorAll('#starRating button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectedRating = parseInt(btn.dataset.rating);
+                document.getElementById('rating').value = selectedRating;
+                
+                document.querySelectorAll('#starRating button').forEach((b, i) => {
+                    b.classList.toggle('active', i < selectedRating);
+                });
+            });
+        });
+
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedRating) {
+                showMessage('Please select a rating', 'error');
+                return;
+            }
+
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) {
+                const email = prompt('Please enter your email used for booking:');
+                if (!email) return;
+                
+                const { data: booking } = await supabase
+                    .from('Booking')
+                    .select('*')
+                    .eq('booking_id', bookingId)
+                    .eq('client_email', email)
+                    .single();
+
+                if (!booking) {
+                    showMessage('Booking not found. Please check your email.', 'error');
+                    return;
+                }
+
+                await submitReview(booking);
+            } else {
+                const { data: booking } = await supabase
+                    .from('Booking')
+                    .select('*')
+                    .eq('booking_id', bookingId)
+                    .single();
+
+                if (booking) {
+                    await submitReview(booking);
+                } else {
+                    showMessage('Booking not found', 'error');
+                }
+            }
+        });
+
+        async function submitReview(booking) {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            const comment = document.getElementById('comment').value;
+
+            const { error } = await supabase
+                .from('Review')
+                .insert({
+                    booking_id: bookingId || 'manual-' + Date.now(),
+                    client_email: booking.client_email,
+                    room: booking.room,
+                    rating: selectedRating,
+                    comment: comment
+                });
+
+            if (error) {
+                showMessage('Error submitting review: ' + error.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Review';
+            } else {
+                showMessage('Thank you for your review!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'reviews.html';
+                }, 2000);
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.innerHTML = `<div class="message ${type}">${text}</div>`;
+        }
+    </script>
+</body>
+</html>
