@@ -161,7 +161,7 @@
     <div class="login-card">
         <h1>Admin Dashboard</h1>
         <input type="email" id="email" placeholder="Email" value="dash@leish.my">
-        <input type="password" id="password" placeholder="Password" value="leish788">
+        <input type="password" id="password" placeholder="Password" value="leish788" onkeydown="if(event.key==='Enter')doLogin()">
         <button onclick="doLogin()">Sign In</button>
         <div class="login-error" id="loginError">Invalid credentials</div>
     </div>
@@ -866,19 +866,6 @@ async function openRoomModal(idx) {
     showToast('Room updated successfully!');
     loadRooms();
     loadBookings();
-}
-            }
-        });
-    }
-    
-    document.getElementById('rooms-grid').innerHTML = rooms.map((r, i) => `
-        <div class="card">
-            <h3>${r.name}</h3>
-            <div style="font-size: 28px; font-weight: 700; color: var(--accent); margin: 10px 0;">MYR <span id="room-price-${i}">${r.price}</span>/hr</div>
-            <p style="color: var(--text-muted); font-size: 13px;">${r.desc}</p>
-            <button class="btn btn-secondary btn-sm" style="margin-top: 12px;" onclick="openPriceModal(${i}, '${r.name}', ${r.price}, '${r.desc}')">Edit Price</button>
-        </div>
-    `).join('');
 }
 
 function openPriceModal(slot, name, price, desc) {
