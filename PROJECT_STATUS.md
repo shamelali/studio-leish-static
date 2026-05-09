@@ -1,54 +1,29 @@
-# Studio Leish - Project Status #
+# Studio Leish - Project Status
 
-**Last Updated:** May 7, 2026
-**Status:** ✅ Code Complete - DB Migration Pending
+**Last Updated:** May 9, 2026
+**Status:** ✅ Storage Fixed - Production Ready
 **Live URL:** https://studio.leish.my
 
 ---
 
 ## ✅ What's Deployed & Working
 
-**Booking Page (https://studio.leish.my/book.html):**
-- ✅ Room order: **Makeup Station → Classroom → Creative Studio**
-- ✅ **New Step 2: Room Details** with conditional forms
-- ✅ **Makeup Station A/B** with real-time availability (green=available, red=booked)
-- ✅ **Classroom form:** Class type, pax, refreshments (120 words), special request (1200 words)
-- ✅ **Creative Studio form:** Usage type → redirects to Add-ons (Content Creation/Photoshoot) or shows event details (Small Event)
-- ✅ Word count validation for all textareas
-- ✅ Updated progress bar (6 steps)
+**Live Site (studio.leish.my):**
+- ✅ Homepage with hero, features, gallery, reviews
+- ✅ Sign-in/Sign-up (Google OAuth + Email OTP)
+- ✅ Booking system with calendar and time slots
+- ✅ Admin dashboard with edit capabilities
+- ✅ Storage bucket `studio-images` configured and active
 
-**Admin Dashboard (https://studio.leish.my/admin.html):**
-- ✅ Updated edit modal with new fields: `room_number`, `class_type`, `pax_count`, `refreshments`, `special_request_class`, `usage_type`, `event_type`, `event_pax`, `special_request_creative`
+**Storage System:**
+- ✅ Bucket `studio-images` created (public, 5MB limit, image formats)
+- ✅ 4 storage policies active (Public Access, Admin Upload/Update/Delete)
+- ✅ Storage URL: `https://kcmoibrqyrzueslaqtgc.supabase.co/storage/v1/object/public/studio-images`
 
----
-
-## ⚠️ Action Required (5 minutes)
-
-### **Run this SQL in Supabase Dashboard:**
-
-**URL:** https://supabase.com/dashboard/project/kcmoibrqyrzueslaqtgc/sql/
-
-**Copy-paste this entire block:**
-
-```sql
--- Add new columns to bookings table
-ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS room_number TEXT;
-ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS class_type TEXT CHECK (class_type IN ('private', 'group'));
-ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS pax_count INTEGER;
-ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS refreshments TEXT;
-ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS special_request_class TEXT;
-ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS usage_type TEXT CHECK (usage_type IN ('Content Creation', 'Photoshoot', 'Small Event'));
-ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS event_type TEXT;
-ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS event_pax INTEGER;
-ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS special_request_creative TEXT;
-
--- Verify
-SELECT column_name FROM information_schema.columns 
-WHERE table_name = 'bookings' 
-ORDER BY ordinal_position;
-```
-
-**Click "Run"** - This should complete without errors.
+**Server Status:**
+- ✅ Disk space fixed (79% used, 6.6GB free)
+- Cleaned up 17MB+ of unnecessary files
+- Removed unused Flatpak runtimes (~6GB freed)
 
 ---
 
@@ -57,10 +32,10 @@ ORDER BY ordinal_position;
 | Resource | URL | Status |
 |----------|-----|--------|
 | Homepage | https://studio.leish.my | ✅ Live |
-| Booking | https://studio.leish.my/book.html | ✅ Live (needs DB migration) |
+| Booking | https://studio.leish.my/book.html | ✅ Live |
 | Admin | https://studio.leish.my/admin.html | ✅ Live |
 | Gallery | https://studio.leish.my/gallery.html | ✅ Live |
-| User Login | https://studio.leish.my/user.html | ✅ Live |
+| Sign In | https://studio.leish.my/signin.html | ✅ Live |
 
 ---
 
@@ -77,27 +52,42 @@ ORDER BY ordinal_position;
 
 | Commit | Description |
 |--------|-------------|
+| `e897d53` | Fix Supabase storage and free disk space |
 | `9a51beb` | docs: Add copy-paste SQL for Supabase |
 | `21ae6b6` | docs: Comprehensive project status update |
-| `667185a` | feat: Add complete bookings table migration SQL |
-| `fa753e2` | docs: Update project status with recent booking page changes |
-| `13ceb88` | feat: Add room details fields to admin edit modal |
-| `c7b6c2f` | fix: Correct SQL migration syntax |
-| `355f743` | feat: Add Makeup Station A/B, Classroom & Creative Studio forms |
 
 ---
 
-## 🚀 Next Steps (After SQL Migration)
+## ⚙️ Supabase Configuration
 
-1. **Test booking flow:** https://studio.leish.my/book.html
-   - Select Makeup Station → Choose Station A or B (see availability)
-   - Select Classroom → Fill class details
-   - Select Creative Studio → Choose usage type
+**Project ID:** `kcmoibrqyrzueslaqtgc`
+**Region:** Southeast Asia (Singapore)
 
-2. **Configure Billplz** (optional): Get API key from billplz.com
+**Storage Buckets:**
+- `studio-images` - Public bucket for site images (5MB limit)
 
-3. **Configure Google OAuth** (optional): Set up in Google Cloud Console
+**Database Tables:**
+- `bookings` - Session bookings
+- `images` - Gallery images
+- `site_settings` - Configuration
+- `push_subscriptions` - Push notifications
 
 ---
 
-**Need help?** Run the SQL above and let me know if you get any errors!
+## 🔧 Optional Enhancements
+
+1. **Billplz Payment:** Configure at https://studio.leish.my/admin.html (Settings tab)
+2. **Google OAuth:** Already configured, works at sign-in
+3. **Email Provider:** Brevo/Resend configured for transactional emails
+
+---
+
+## 🚀 Next Steps
+
+1. **Test full booking flow:** Book a session and verify email notification
+2. **Upload gallery images:** Use admin panel to add images to `studio-images` bucket
+3. **Monitor storage:** 5MB per file limit - consider upgrading plan for larger files
+
+---
+
+**Questions?** Check the site is accessible at https://studio.leish.my
