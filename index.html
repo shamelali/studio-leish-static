@@ -81,8 +81,8 @@
         }
 
         .logo-icon {
-            width: 48px;
-            height: 48px;
+            width: 80px;
+            height: 80px;
             background: linear-gradient(135deg, var(--accent), var(--gold));
             border-radius: 12px;
             display: flex;
@@ -92,11 +92,15 @@
             animation: pulse-glow 3s ease-in-out infinite;
         }
 
-        .logo-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
+.logo-icon img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .logo h1 {
+            display: none;
         }
 
         @keyframes pulse-glow {
@@ -1390,9 +1394,9 @@
                 // Slot 5: Logo
                 const logoImg = data.find(x => x.slot === 5);
                 if (logoImg?.image_url) {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(logoImg.image_url) + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(logoImg.image_url) + '" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
                 } else {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(defaultLogo) + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(defaultLogo) + '" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
                 }
                 
                 // Slot 0: Hero Image
@@ -1414,7 +1418,7 @@
                     loadGalleryImages(galleryImages);
                 }
             } else {
-                document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
             }
         });
         
