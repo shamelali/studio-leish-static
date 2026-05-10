@@ -743,42 +743,6 @@ function showPage(page) {
 async function loadAllData() {
     await Promise.all([loadBookings(), loadClients(), loadRooms(), loadImages()]);
     renderCalendar();
-    enableRealtimeSync();
-}
-
-// Real-time sync
-let realtimeEnabled = false;
-function enableRealtimeSync() {
-    if (realtimeEnabled) return;
-    realtimeEnabled = true;
-    
-    // Subscribe to bookings changes
-    sbClient.channel('admin-bookings')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
-            console.log('Booking change detected:', payload);
-            loadBookings();
-            showToast('New booking detected!', 'success');
-        })
-        .subscribe();
-    
-    // Subscribe to site_settings changes (room names, prices)
-    sbClient.channel('admin-settings')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, (payload) => {
-            console.log('Settings change detected:', payload);
-            loadRooms();
-        })
-        .subscribe();
-    
-    // Subscribe to site_images changes
-    sbClient.channel('admin-images')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'site_images' }, (payload) => {
-            console.log('Image change detected:', payload);
-            loadImages();
-        })
-        .subscribe();
-    
-    console.log('Real-time sync enabled');
-    showToast('Real-time sync enabled', 'success');
 }
 
 async function loadBookings() {
@@ -866,6 +830,19 @@ async function openRoomModal(idx) {
     showToast('Room updated successfully!');
     loadRooms();
     loadBookings();
+}
+            }
+        });
+    }
+    
+    document.getElementById('rooms-grid').innerHTML = rooms.map((r, i) => `
+        <div class="card">
+            <h3>${r.name}</h3>
+            <div style="font-size: 28px; font-weight: 700; color: var(--accent); margin: 10px 0;">MYR <span id="room-price-${i}">${r.price}</span>/hr</div>
+            <p style="color: var(--text-muted); font-size: 13px;">${r.desc}</p>
+            <button class="btn btn-secondary btn-sm" style="margin-top: 12px;" onclick="openPriceModal(${i}, '${r.name}', ${r.price}, '${r.desc}')">Edit Price</button>
+        </div>
+    `).join('');
 }
 
 function openPriceModal(slot, name, price, desc) {
