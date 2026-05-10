@@ -80,23 +80,16 @@
             cursor: pointer;
         }
 
-        .logo-icon {
-            width: 200px;
+.logo-icon {
+            width: 240px;
             height: 80px;
-            background: linear-gradient(135deg, var(--accent), var(--gold));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            animation: pulse-glow 3s ease-in-out infinite;
         }
 
-.logo-icon img {
-            width: 80px;
-            height: 80px;
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
             object-fit: contain;
-            border-radius: 8px;
+            border-radius: 0;
         }
 
         .logo h1 {
@@ -106,15 +99,6 @@
         @keyframes pulse-glow {
             0%, 100% { box-shadow: 0 0 20px rgba(233, 69, 96, 0.3); }
             50% { box-shadow: 0 0 40px rgba(233, 69, 96, 0.6); }
-        }
-
-        .logo h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--text), var(--accent-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .user-btn {
@@ -1394,9 +1378,9 @@
                 // Slot 5: Logo
                 const logoImg = data.find(x => x.slot === 5);
                 if (logoImg?.image_url) {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(logoImg.image_url) + '" style="width: 200px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(logoImg.image_url) + '" style="width: 240px; height: 80px; object-fit: contain; border-radius: 0; background: transparent;">';
                 } else {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(defaultLogo) + '" style="width: 200px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(defaultLogo) + '" style="width: 240px; height: 80px; object-fit: contain; border-radius: 0; background: transparent;">';
                 }
                 
                 // Slot 0: Hero Image
@@ -1418,7 +1402,7 @@
                     loadGalleryImages(galleryImages);
                 }
             } else {
-                document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 200px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 240px; height: 80px; object-fit: contain; border-radius: 0; background: transparent;">';
             }
         });
         
