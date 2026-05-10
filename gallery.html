@@ -317,18 +317,20 @@
                 const { data, error } = await sbClient
                     .from('site_images')
                     .select('*')
-                    .in('slot', [1, 2, 3, 4]) // Gallery slots
-                    .order('slot', { ascending: true });
+                    .in('slot', [1, 2, 3, 4, 9, 10, 11]); // Gallery slots
                 
                 if (error) throw error;
                 
                 const mediaItems = document.querySelectorAll('.media-item');
-                if (data && data.length > 0) {
-                    data.forEach((img, idx) => {
-                        if (img.image_url && mediaItems[idx]) {
+                const slotMap = { 1: 0, 2: 1, 3: 2, 4: 3, 9: 8, 10: 9, 11: 4 };
+                
+                if (data) {
+                    data.forEach((img) => {
+                        const idx = slotMap[img.slot];
+                        if (img.image_url && idx !== undefined && mediaItems[idx]) {
                             const item = mediaItems[idx];
                             item.innerHTML = `
-                                <img src="${proxyImageUrl(img.image_url)}" alt="${img.slot_name || 'Gallery ' + (idx + 1)}" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="${proxyImageUrl(img.image_url)}" alt="${img.slot_name || 'Gallery'}" style="width:100%;height:100%;object-fit:cover;">
                                 <span class="media-badge image"><i class="fas fa-image"></i> Image</span>
                             `;
                         }
