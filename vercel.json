@@ -1,5 +1,10 @@
 {
   "rewrites": [
-    { "source": "/api/email-webhook", "destination": "/api/email-webhook.js" }
+    { "source": "/api/email-webhook", "destination": "/api/email-webhook.js" },
+    { "source": "/api/proxy-image", "destination": "/api/proxy-image.js" },
+    { "source": "/api/db", "destination": "/api/db.js" },
+    { "source": "/api/send-email", "destination": "/api/send-email.js" },
+    { "source": "/api/billplz-create-bill", "destination": "/api/billplz-create-bill.js" },
+    { "source": "/api/billplz-callback", "destination": "/api/billplz-callback.js" }
   ]
 }

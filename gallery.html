@@ -271,6 +271,12 @@
         const supabaseLib = window.supabase || window.Supabase || window._supabase;
         const sbClient = supabaseLib ? supabaseLib.createClient(supabaseUrl, supabaseKey) : null;
 
+        function proxyImageUrl(url) {
+            if (!url) return '';
+            if (url.startsWith('/') || url.startsWith(window.location.origin)) return url;
+            return '/api/proxy-image?url=' + encodeURIComponent(url);
+        }
+
         // Space data (fallback if Supabase table doesn't exist yet)
         const fallbackSpaces = [
             {
@@ -322,7 +328,7 @@
                         if (img.image_url && mediaItems[idx]) {
                             const item = mediaItems[idx];
                             item.innerHTML = `
-                                <img src="${img.image_url}" alt="${img.slot_name || 'Gallery ' + (idx + 1)}" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="${proxyImageUrl(img.image_url)}" alt="${img.slot_name || 'Gallery ' + (idx + 1)}" style="width:100%;height:100%;object-fit:cover;">
                                 <span class="media-badge image"><i class="fas fa-image"></i> Image</span>
                             `;
                         }
@@ -346,10 +352,10 @@
                 let spaceImages = {};
                 if (data && data.length > 0) {
                     data.forEach(img => {
-                        if (img.slot === 6) spaceImages['creative-studio'] = img.image_url;
-                        if (img.slot === 7) spaceImages['makeup-suite'] = img.image_url;
-                        if (img.slot === 8) spaceImages['studio'] = img.image_url;
-                        if (img.slot === 9) spaceImages['classroom'] = img.image_url;
+                        if (img.slot === 6) spaceImages['creative-studio'] = proxyImageUrl(img.image_url);
+                        if (img.slot === 7) spaceImages['makeup-suite'] = proxyImageUrl(img.image_url);
+                        if (img.slot === 8) spaceImages['studio'] = proxyImageUrl(img.image_url);
+                        if (img.slot === 9) spaceImages['classroom'] = proxyImageUrl(img.image_url);
                     });
                 }
                 

@@ -675,6 +675,12 @@ try {
     }
 } catch(e) { console.warn('Supabase init error:', e.message); }
 
+function proxyImageUrl(url) {
+    if (!url) return '';
+    if (url.startsWith('/') || url.startsWith(window.location.origin)) return url;
+    return '/api/proxy-image?url=' + encodeURIComponent(url);
+}
+
 // ─── Flatpickr ───────────────────────────────────────────────────────────────
 let datePicker = null;
 try {
@@ -1172,7 +1178,7 @@ async function loadRoomImages() {
             if (roomName) {
                 roomCards.forEach(card => {
                     if (card.querySelector('.room-name')?.textContent === roomName) {
-                        card.querySelector('.room-icon').innerHTML = `<img src="${img.image_url}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none'">`;
+                        card.querySelector('.room-icon').innerHTML = `<img src="${proxyImageUrl(img.image_url)}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none'">`;
                     }
                 });
             }

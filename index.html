@@ -1377,6 +1377,12 @@
 
         // Fetch logo from site_images table
         const defaultLogo = 'https://drive.google.com/uc?export=view&id=1XXjefgw0szywusF_jFiYqdr_xtIxw8XH';
+
+        function proxyImageUrl(url) {
+          if (!url) return '';
+          if (url.startsWith('/') || url.startsWith(window.location.origin)) return url;
+          return '/api/proxy-image?url=' + encodeURIComponent(url);
+        }
         
         // Load all images from site_images table
         supabaseClient.from('site_images').select('*').order('slot', { ascending: true }).then(({ data }) => {
@@ -1384,16 +1390,16 @@
                 // Slot 5: Logo
                 const logoImg = data.find(x => x.slot === 5);
                 if (logoImg?.image_url) {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + logoImg.image_url + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(logoImg.image_url) + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent;">';
                 } else {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(defaultLogo) + '" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent;">';
                 }
                 
                 // Slot 0: Hero Image
                 const heroImg = data.find(x => x.slot === 0);
                 if (heroImg?.image_url) {
                     const hero = document.querySelector('.hero-section');
-                    if (hero) hero.style.backgroundImage = 'linear-gradient(rgba(15, 15, 26, 0.85), rgba(15, 15, 26, 0.85)), url(' + heroImg.image_url + ')';
+                    if (hero) hero.style.backgroundImage = 'linear-gradient(rgba(15, 15, 26, 0.85), rgba(15, 15, 26, 0.85)), url(' + proxyImageUrl(heroImg.image_url) + ')';
                 }
                 
                 // Slots 6-9: Space images (Workstation 1, 2, Studio, Classroom)
@@ -1418,10 +1424,10 @@
             const studioGrid = document.getElementById('studioGrid');
             
             // Map images to their slots
-            const ws1Img = images.find(x => x.slot === 6)?.image_url;
-            const ws2Img = images.find(x => x.slot === 7)?.image_url;
-            const studioImg = images.find(x => x.slot === 8)?.image_url;
-            const classImg = images.find(x => x.slot === 9)?.image_url;
+            const ws1Img = proxyImageUrl(images.find(x => x.slot === 6)?.image_url);
+            const ws2Img = proxyImageUrl(images.find(x => x.slot === 7)?.image_url);
+            const studioImg = proxyImageUrl(images.find(x => x.slot === 8)?.image_url);
+            const classImg = proxyImageUrl(images.find(x => x.slot === 9)?.image_url);
             
             // For now, just store the URLs for reference
             window.spaceImages = { ws1: ws1Img, ws2: ws2Img, studio: studioImg, classroom: classImg };
@@ -1432,7 +1438,7 @@
             const sliderTrack = document.querySelector('.slider-track');
             if (sliderTrack && images.length > 0) {
                 // Update gallery slider with images
-                window.galleryImages = images.map(x => x.image_url);
+                window.galleryImages = images.map(x => proxyImageUrl(x.image_url));
                 updateGallerySlider();
             }
         }
