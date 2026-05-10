@@ -317,7 +317,7 @@
                 const { data, error } = await sbClient
                     .from('site_images')
                     .select('*')
-                    .in('slot', [1, 2, 3, 4, 9, 10, 11]); // Gallery slots
+                    .in('slot', [1, 2, 3, 4, 10, 11]); // Gallery slots
                 
                 if (error) throw error;
                 
@@ -357,7 +357,6 @@
                         if (img.slot === 6) spaceImages['creative-studio'] = proxyImageUrl(img.image_url);
                         if (img.slot === 7) spaceImages['makeup-suite'] = proxyImageUrl(img.image_url);
                         if (img.slot === 8) spaceImages['studio'] = proxyImageUrl(img.image_url);
-                        if (img.slot === 9) spaceImages['classroom'] = proxyImageUrl(img.image_url);
                     });
                 }
                 

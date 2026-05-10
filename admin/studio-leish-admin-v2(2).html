@@ -1190,9 +1190,9 @@ textarea.fc { resize: vertical; min-height: 70px; }
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
             <p style="font-size:12px;color:var(--char-m);margin-bottom:2px">Drop or <strong style="color:var(--gold-d)">click to upload</strong></p>
-            <span style="font-size:9px;color:var(--char-l);letter-spacing:.06em">JPEG · PNG · WebP · max 5 MB</span>
+            <span style="font-size:9px;color:var(--char-l);letter-spacing:.06em">JPEG · PNG · WebP · HEIC/HEIF · max 5 MB</span>
           </div>
-          <input type="file" id="img-file-input" multiple accept="image/*" onchange="handleFileSelect(event)" style="display:none"/>
+          <input type="file" id="img-file-input" multiple accept="image/*,.heic,.heif" onchange="handleFileSelect(event)" style="display:none"/>
 
           <!-- Upload progress -->
           <div id="upload-progress" style="display:none;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface)">
@@ -2321,8 +2321,13 @@ function onDrop(e) {
 function handleFileSelect(e) { uploadFiles([...e.target.files]); e.target.value = ''; }
 
 async function uploadFiles(files) {
-  const valid = files.filter(f => f.type.startsWith('image/') && f.size < 5*1024*1024);
-  if (!valid.length) { toast('Only images under 5 MB are allowed', 'err'); return; }
+    const valid = files.filter(f => {
+        const isImageType = f.type.startsWith('image/');
+        const isHeicHeif = f.name.match(/\.(heic|heif)$/i);
+        const isValidSize = f.size < 5*1024*1024;
+        return (isImageType || isHeicHeif) && isValidSize;
+    });
+    if (!valid.length) { toast('Only images (including HEIC/HEIF) under 5 MB are allowed', 'err'); return; }
 
   for (const file of valid) {
     const prog = document.getElementById('upload-progress');

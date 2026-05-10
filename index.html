@@ -1415,10 +1415,8 @@
             const ws1Img = proxyImageUrl(images.find(x => x.slot === 6)?.image_url);
             const ws2Img = proxyImageUrl(images.find(x => x.slot === 7)?.image_url);
             const studioImg = proxyImageUrl(images.find(x => x.slot === 8)?.image_url);
-            const classImg = proxyImageUrl(images.find(x => x.slot === 9)?.image_url);
             
-            // For now, just store the URLs for reference
-            window.spaceImages = { ws1: ws1Img, ws2: ws2Img, studio: studioImg, classroom: classImg };
+            window.spaceImages = { ws1: ws1Img, ws2: ws2Img, studio: studioImg };
         }
         
         function loadGalleryImages(images) {
