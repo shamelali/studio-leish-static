@@ -81,7 +81,7 @@
         }
 
         .logo-icon {
-            width: 80px;
+            width: 200px;
             height: 80px;
             background: linear-gradient(135deg, var(--accent), var(--gold));
             border-radius: 12px;
@@ -1394,9 +1394,9 @@
                 // Slot 5: Logo
                 const logoImg = data.find(x => x.slot === 5);
                 if (logoImg?.image_url) {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(logoImg.image_url) + '" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(logoImg.image_url) + '" style="width: 200px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
                 } else {
-                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(defaultLogo) + '" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                    document.getElementById('logoIcon').innerHTML = '<img src="' + proxyImageUrl(defaultLogo) + '" style="width: 200px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
                 }
                 
                 // Slot 0: Hero Image
@@ -1418,7 +1418,7 @@
                     loadGalleryImages(galleryImages);
                 }
             } else {
-                document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
+                document.getElementById('logoIcon').innerHTML = '<img src="' + defaultLogo + '" style="width: 200px; height: 80px; object-fit: contain; border-radius: 8px; background: transparent;">';
             }
         });
         
