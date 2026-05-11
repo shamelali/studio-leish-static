@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Studio Leish</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @media print { * { font-family: Arial, sans-serif !important; } }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+            --text-muted: #8892b0;
+            --border: #2a2a4a;
+            --success: #00d9a5;
+            --warning: #f4d03f;
+        }
+        body { font-family: 'Outfit', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; }
+        
+        /* Login */
+        .login-screen { position: fixed; inset: 0; background: var(--primary); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-card { background: var(--secondary); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; }
+        .login-card h1 { font-size: 24px; margin-bottom: 30px; text-align: center; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-card input { width: 100%; padding: 14px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; margin-bottom: 16px; }
+        .login-card input:focus { outline: none; border-color: var(--accent); }
+        .login-card button { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .login-card button:hover { opacity: 0.9; }
+        .login-error { color: var(--accent); font-size: 13px; text-align: center; margin-top: 10px; display: none; }
+
+        /* App Layout */
+        .app { display: none; }
+        .app.active { display: flex; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--primary); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; }
+        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--border); }
+        .sidebar-header h1 { font-size: 18px; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar-header span { font-size: 11px; color: var(--text-muted); }
+        .sidebar-nav { padding: 16px 0; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: var(--text-muted); cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+        .nav-item.active { background: rgba(233,69,96,0.1); color: var(--accent); border-left-color: var(--accent); }
+        .nav-item i { width: 20px; }
+        .nav-badge { margin-left: auto; background: var(--accent); color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); }
+        .sidebar-footer button { width: 100%; padding: 10px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 8px; cursor: pointer; }
+        .sidebar-footer button:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Main Content */
+        .main { margin-left: 260px; flex: 1; padding: 24px; }
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        /* Header */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .page-header h2 { font-size: 24px; }
+        .page-header .actions { display: flex; gap: 12px; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--secondary); border: 1px solid var(--border); border-radius: 12px; padding: 24px; position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent); }
+        .stat-card .icon { width: 48px; height: 48px; background: rgba(233,69,96,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 20px; margin-bottom: 16px; }
+        .stat-card .label { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+        .stat-card .value { font-size: 32px; font-weight: 700; }
+        .stat-card.gold { border-color: var(--accent); }
+
+        /* Tables */
+        .table-wrap { background: var(--secondary); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 16px; text-align: left; }
+        th { background: var(--primary); font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        td { border-bottom: 1px solid var(--border); font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: rgba(233,69,96,0.05); }
+        
+        /* Badges */
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge.pending { background: rgba(244,208,63,0.2); color: var(--warning); }
+        .badge.confirmed { background: rgba(0,217,165,0.2); color: var(--success); }
+        .badge.cancelled { background: rgba(233,69,96,0.2); color: var(--accent); }
+        .badge.paid { background: rgba(0,217,165,0.2); color: var(--success); }
+        .badge.unpaid { background: rgba(244,208,63,0.2); color: var(--warning); }
+
+        /* Buttons */
+        .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary { background: var(--primary); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        /* Forms */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: var(--primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
+
+        /* Cards */
+        .card { background: var(--secondary); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+        .card h3 { font-size: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+
+        /* Grid layouts */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--secondary); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 18px; }
+        .modal-header button { background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 12px; justify-content: flex-end; }
+
+        /* Search */
+        .search-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+        .search-bar input { flex: 1; padding: 12px; background: var(--secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text); }
+        .search-bar select { padding: 12px; background: var(--secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text); }
+
+        /* Calendar */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: var(--border); }
+        .cal-header { background: var(--primary); padding: 12px; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+        .cal-cell { background: var(--secondary); min-height: 100px; padding: 10px; font-size: 14px; }
+        .cal-cell.other-month { opacity: 0.4; }
+        .cal-cell.today { background: rgba(233,69,96,0.1); }
+        .cal-event { font-size: 11px; padding: 4px 8px; border-radius: 4px; margin-top: 4px; background: rgba(0,217,165,0.2); color: var(--success); }
+
+        /* Empty state */
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .empty i { font-size: 48px; margin-bottom: 16px; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; right: 24px; padding: 16px 24px; border-radius: 8px; font-size: 14px; z-index: 10000; animation: slideIn 0.3s; }
+        .toast.success { background: var(--success); color: var(--surface); }
+        .toast.error { background: var(--accent); color: white; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        /* Toggle */
+        .toggle { position: relative; width: 50px; height: 26px; }
+        .toggle input { display: none; }
+        .toggle::before { content: ''; position: absolute; inset: 0; background: var(--border); border-radius: 26px; transition: 0.3s; }
+        .toggle::after { content: ''; position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
+        .toggle input:checked::before { background: var(--accent); }
+        .toggle input:checked::after { left: 26px; }
+    </style>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-screen" id="loginScreen">
+    <div class="login-card">
+        <h1>Admin Dashboard</h1>
+        <input type="email" id="email" placeholder="Email" value="dash@leish.my">
+        <input type="password" id="password" placeholder="Password" value="leish788" onkeydown="if(event.key==='Enter')doLogin()">
+        <button onclick="doLogin()">Sign In</button>
+        <div class="login-error" id="loginError">Invalid credentials</div>
+    </div>
+</div>
+
+<!-- App -->
+<div class="app" id="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>L<span style="color: #e94560;">sh</span> Studio</h1>
+            <span>Admin Dashboard</span>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" onclick="showPage('dashboard')">
+                <i class="fas fa-th-large"></i> Dashboard
+            </div>
+            <div class="nav-item" onclick="showPage('bookings')">
+                <i class="fas fa-calendar"></i> Bookings
+                <span class="nav-badge" id="badge-pending">0</span>
+            </div>
+            <div class="nav-item" onclick="showPage('clients')">
+                <i class="fas fa-users"></i> Clients
+            </div>
+            <div class="nav-item" onclick="showPage('rooms')">
+                <i class="fas fa-door-open"></i> Rooms
+            </div>
+            <div class="nav-item" onclick="showPage('calendar')">
+                <i class="fas fa-calendar-alt"></i> Calendar
+            </div>
+            <div class="nav-item" onclick="showPage('analytics')">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </div>
+            <div class="nav-item" onclick="showPage('images'); loadImages();">
+                <i class="fas fa-images"></i> Images
+            </div>
+            <div class="nav-item" onclick="showPage('settings')">
+                <i class="fas fa-cog"></i> Settings
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <button onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        
+        <!-- Dashboard Page -->
+        <div class="page active" id="page-dashboard">
+            <div class="page-header">
+                <h2>📊 Dashboard</h2>
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="loadAllData()"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="label">Total Bookings</div>
+                    <div class="value" id="stat-total">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-clock"></i></div>
+                    <div class="label">Pending</div>
+                    <div class="value" id="stat-pending">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="label">Confirmed</div>
+                    <div class="value" id="stat-confirmed">0</div>
+                </div>
+                <div class="stat-card gold">
+                    <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="label">Revenue</div>
+                    <div class="value" id="stat-revenue">MYR 0</div>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3><i class="fas fa-clock"></i> Today's Schedule</h3>
+                    <div id="today-schedule">
+                        <div class="empty">No bookings today</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><i class="fas fa-chart-pie"></i> Bookings by Room</h3>
+                    <div id="room-stats"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookings Page -->
+        <div class="page" id="page-bookings">
+            <div class="page-header">
+                <h2>📅 All Bookings</h2>
+                <button class="btn btn-primary" onclick="exportBookings()"><i class="fas fa-download"></i> Export</button>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-bookings" placeholder="Search by name, email, ID..." onkeyup="filterBookings()">
+                <select id="filter-status" onchange="filterBookings()">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <select id="filter-payment" onchange="filterBookings()">
+                    <option value="">All Payments</option>
+                    <option value="paid">Paid</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Client</th>
+                            <th>Room</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookings-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Clients Page -->
+        <div class="page" id="page-clients">
+            <div class="page-header">
+                <h2>👥 Clients</h2>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-clients" placeholder="Search clients..." onkeyup="loadClients()">
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Bookings</th>
+                            <th>Total Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clients-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Rooms Page -->
+        <div class="page" id="page-rooms">
+            <div class="page-header">
+                <h2>🚪 Rooms & Pricing</h2>
+                <button class="btn btn-primary" onclick="addNewRoom()">+ Add Room</button>
+            </div>
+            <div class="grid-3" id="rooms-grid"></div>
+        </div>
+
+        <!-- Calendar Page -->
+        <div class="page" id="page-calendar">
+            <div class="page-header">
+                <h2>📆 Calendar</h2>
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="prevMonth()"><</button>
+                    <span id="cal-month" style="padding: 10px;">May 2026</span>
+                    <button class="btn btn-secondary" onclick="nextMonth()">></button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+        </div>
+
+        <!-- Analytics Page -->
+        <div class="page" id="page-analytics">
+            <div class="page-header">
+                <h2>📈 Analytics</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="label">Total Revenue</div><div class="value" id="an-revenue">MYR 0</div></div>
+                <div class="stat-card"><div class="label">This Month</div><div class="value" id="an-month">0</div></div>
+                <div class="stat-card"><div class="label">Avg per Booking</div><div class="value" id="an-avg">MYR 0</div></div>
+            </div>
+            <div class="grid-2">
+                <div class="card"><h3>Monthly Trend</h3><div id="monthly-chart"></div></div>
+                <div class="card"><h3>Room Distribution</h3><div id="room-chart"></div></div>
+            </div>
+        </div>
+
+        <!-- Images Page -->
+        <div class="page" id="page-images">
+            <div class="page-header">
+                <h2>🖼️ Content Editor</h2>
+            </div>
+            
+            <!-- Header & Logo -->
+            <div class="card">
+                <h3><i class="fas fa-home"></i> Header</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Logo Image</label>
+                        <div id="header-logo-preview" style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                            <!-- No placeholder icon -->
+                        </div>
+                        <input type="file" id="header-logo-file" accept="image/*" style="margin-bottom: 8px; width: 100%;">
+                        <input type="text" id="header-logo-url" placeholder="Or paste URL" style="width: 100%; padding: 10px; background: var(--primary); border: 1px solid var(--border); border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Site Title</label>
+                        <input type="text" id="site-title" value="L<span style="color: #e94560;">sh</span> Studio" style="width: 100%; padding: 12px; background: var(--primary); border: 1px solid var(--border); border-radius: 8px;">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveHeader()" style="margin-top: 16px;">Save Header</button>
+            </div>
+
+            <!-- Hero Section -->
+            <div class="card">
+                <h3><i class="fas fa-image"></i> Hero Section</h3>
+                <div style="height: 200px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; overflow: hidden;">
+                    <i class="fas fa-image" style="font-size: 48px; color: var(--text-muted);"></i>
+                </div>
+                <input type="file" id="hero-file" accept="image/*" style="margin-bottom: 8px; width: 100%;">
+                <input type="text" id="hero-url" placeholder="Hero image URL" style="width: 100%; padding: 12px; background: var(--primary); border: 1px solid var(--border); border-radius: 8px;">
+                <button class="btn btn-primary" onclick="saveImage(0, 'hero')" style="margin-top: 12px;">Save Hero</button>
+            </div>
+
+            <!-- Gallery (4 slots) -->
+            <div class="card">
+                <h3><i class="fas fa-images"></i> Gallery (4 images)</h3>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Gallery 1</label>
+                        <div style="height: 100px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-image" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="gallery-1-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="gallery-1-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(1, 'gallery')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Gallery 2</label>
+                        <div style="height: 100px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-image" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="gallery-2-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="gallery-2-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(2, 'gallery')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Gallery 3</label>
+                        <div style="height: 100px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-image" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="gallery-3-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="gallery-3-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(3, 'gallery')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Gallery 4</label>
+                        <div style="height: 100px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-image" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="gallery-4-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="gallery-4-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(4, 'gallery')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Browse Spaces Gallery (12 slots) -->
+            <div class="card">
+                <h3><i class="fas fa-th"></i> Browse Spaces (12 images)</h3>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 1</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-desktop" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-1-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-1-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(20, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 2</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-video" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-2-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-2-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(21, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 3</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-palette" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-3-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-3-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(22, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 4</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-couch" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-4-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-4-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(23, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 5</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-lightbulb" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-5-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-5-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(24, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 6</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-video" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-6-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-6-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(25, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 7</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-door-open" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-7-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-7-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(26, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 8</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-chair" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-8-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-8-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(27, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 9</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-film" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-9-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-9-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(28, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 10</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-mirror" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-10-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-10-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(29, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 11</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-wifi" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-11-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-11-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(30, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);">Space 12</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-coffee" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="space-12-file" accept="image/*" style="margin-bottom: 4px; width: 100%;">
+                        <input type="text" id="space-12-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(31, 'space')" style="margin-top: 4px; width: 100%;">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Socials -->
+            <div class="card">
+                <h3><i class="fas fa-share-alt"></i> Footer & Socials</h3>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Footer Logo</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-gem" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="footer-logo-file" accept="image/*" style="margin-bottom: 8px; width: 100%;">
+                        <input type="text" id="footer-logo-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(14, 'footer')" style="margin-top: 8px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Social Banner</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-share" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="social-banner-file" accept="image/*" style="margin-bottom: 8px; width: 100%;">
+                        <input type="text" id="social-banner-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(15, 'social')" style="margin-top: 8px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Background Pattern</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-palette" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="bg-pattern-file" accept="image/*" style="margin-bottom: 8px; width: 100%;">
+                        <input type="text" id="bg-pattern-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(10, 'bg')" style="margin-top: 8px; width: 100%;">Save</button>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Favicon</label>
+                        <div style="height: 80px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;">
+                            <i class="fas fa-star" style="color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="favicon-file" accept="image/*" style="margin-bottom: 8px; width: 100%;">
+                        <input type="text" id="favicon-url" placeholder="URL" style="width: 100%; padding: 8px; background: var(--primary); border: 1px solid var(--border); border-radius: 6px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveImage(16, 'favicon')" style="margin-top: 8px; width: 100%;">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div class="page" id="page-settings">
+            <div class="page-header">
+                <h2>⚙️ Settings</h2>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Supabase</h3>
+                    <div class="form-group">
+                        <label>URL</label>
+                        <input type="text" id="setting-url" value="https://kcmoibrqyrzueslaqtgc.supabase.co">
+                    </div>
+                    <div class="form-group">
+                        <label>Key</label>
+                        <input type="password" id="setting-key" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                    </div>
+                    <button class="btn btn-primary" onclick="showToast('Settings saved')">Save</button>
+                </div>
+                <div class="card">
+                    <h3>Business Info</h3>
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" id="setting-name" value="Studio Leish">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="setting-email" value="admin@leish.my">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="setting-phone" value="+60123456789">
+                    </div>
+                    <button class="btn btn-primary" onclick="showToast('Settings saved')">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Price Modal -->
+        <div class="modal-overlay" id="priceModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Edit Room Price</h3>
+                    <button onclick="closePriceModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="price-slot">
+                    <div class="form-group">
+                        <label>Room Name</label>
+                        <input type="text" id="price-name" disabled style="background: var(--primary);">
+                    </div>
+                    <div class="form-group">
+                        <label>Price (MYR/hr)</label>
+                        <input type="number" id="price-value" min="0" style="width:100%;padding:12px;background:var(--primary);border:2px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="price-desc" rows="2" style="width:100%;padding:12px;background:var(--primary);border:2px solid var(--border);border-radius:8px;color:var(--text);"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closePriceModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="savePrice()">Save</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Edit Booking</h3>
+            <button onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="edit-id">
+            <div class="form-group">
+                <label>Status</label>
+                <select id="edit-status">
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Payment</label>
+                <select id="edit-payment">
+                    <option value="pending">Pending</option>
+                    <option value="paid">Paid</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="edit-notes" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveBooking()">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function proxyImageUrl(url) {
+    if (!url) return '';
+    if (url.startsWith('/') || url.startsWith(window.location.origin)) return url;
+    return '/api/proxy-image?url=' + encodeURIComponent(url);
+}
+
+const VALID_ADMINS = ['admin@leish.my', 'dash@leish.my'];
+const VALID_PASS = 'leish788';
+
+let allBookings = [];
+let allClients = [];
+let currentMonth = new Date();
+
+// Login
+async function doLogin() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    if (VALID_ADMINS.includes(email) && password === VALID_PASS) {
+        localStorage.setItem('adminEmail', email);
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('app').classList.add('active');
+        loadAllData();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+    }
+}
+
+function doLogout() {
+    localStorage.removeItem('adminEmail');
+    location.reload();
+}
+
+// Navigation
+function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    event.target.closest('.nav-item').classList.add('active');
+}
+
+// Data Loading
+async function loadAllData() {
+    await Promise.all([loadBookings(), loadClients(), loadRooms(), loadImages()]);
+    renderCalendar();
+}
+
+async function loadBookings() {
+    const { data, error } = await sbClient.from('bookings').select('*').order('created_at', { ascending: false });
+    if (error) { console.error(error); return; }
+    allBookings = data || [];
+    
+    const total = allBookings.length;
+    const pending = allBookings.filter(b => b.status === 'pending').length;
+    const confirmed = allBookings.filter(b => b.status === 'confirmed').length;
+    const revenue = allBookings.filter(b => b.payment_status === 'paid').reduce((sum, b) => sum + (b.total_amount || 0), 0);
+    
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-confirmed').textContent = confirmed;
+    document.getElementById('stat-revenue').textContent = 'MYR ' + revenue.toLocaleString();
+    document.getElementById('badge-pending').textContent = pending;
+    
+    renderBookingsTable();
+    renderTodaySchedule();
+    renderRoomStats();
+}
+
+async function loadClients() {
+    const { data } = await sbClient.from('clients').select('*').order('created_at', { ascending: false });
+    allClients = data || [];
+    renderClients();
+}
+
+async function loadRooms() {
+    const { data: roomData } = await sbClient.from('site_settings').select('key, value').like('key', 'room_%');
+    
+    let rooms = [
+        { slot: 0, name: 'Makeup Studio', price: 80, desc: 'Professional makeup station' },
+        { slot: 1, name: 'Content Creation Room', price: 120, desc: 'Photo/video studio' },
+        { slot: 2, name: 'Classroom', price: 60, desc: 'Training space' }
+    ];
+    
+    if (roomData) {
+        roomData.forEach(item => {
+            const match = item.key.match(/^room_(\d+)$/);
+            if (match) {
+                const idx = parseInt(match[1]);
+                const priceData = JSON.parse(item.value || '{}');
+                if (rooms[idx]) {
+                    rooms[idx].price = priceData.price || rooms[idx].price;
+                    rooms[idx].desc = priceData.desc || rooms[idx].desc;
+                    if (priceData.name) rooms[idx].name = priceData.name;
+                }
+            }
+        });
+    }
+    
+    document.getElementById('rooms-grid').innerHTML = rooms.map((r, i) => `
+        <div class="card">
+            <h3 id="room-name-${i}">${r.name}</h3>
+            <div style="font-size: 28px; font-weight: 700; color: var(--accent); margin: 10px 0;">MYR <span id="room-price-${i}">${r.price}</span>/hr</div>
+            <p style="color: var(--text-muted); font-size: 13px;" id="room-desc-${i}">${r.desc}</p>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <button class="btn btn-secondary btn-sm" onclick="openRoomModal(${i})">Edit</button>
+            </div>
+        </div>
+    `);
+}
+
+async function addNewRoom() {
+    const name = prompt('Enter room name:');
+    if (!name) return;
+    
+    const price = prompt('Enter price (MYR/hr):');
+    if (!price) return;
+    
+    const desc = prompt('Enter description:');
+    
+    const { data: roomData } = await sbClient.from('site_settings').select('key').like('key', 'room_%');
+    
+    let maxSlot = 2;
+    if (roomData) {
+        roomData.forEach(item => {
+            const match = item.key.match(/^room_(\d+)$/);
+            if (match) maxSlot = Math.max(maxSlot, parseInt(match[1]));
+        });
+    }
+    
+    const slot = maxSlot + 1;
+    const roomJson = JSON.stringify({ name, price: parseInt(price) || 80, desc: desc || '' });
+    
+    await sbClient.from('site_settings').insert({ key: 'room_' + slot, value: roomJson });
+    
+    showToast('Room added!');
+    
+    setTimeout(() => loadRooms(), 500);
+}
+
+async function openRoomModal(idx) {
+    const { data } = await sbClient.from('site_settings').select('value').eq('key', `room_${idx}`).single();
+    let room = { name: ['Makeup Studio', 'Content Creation Room', 'Classroom'][idx], price: [80, 120, 60][idx], desc: ['Professional makeup station', 'Photo/video studio', 'Training space'][idx] };
+    if (data?.value) room = { ...room, ...JSON.parse(data.value) };
+    
+    const newName = prompt('Enter room name:', room.name);
+    if (newName === null) return;
+    
+    const newPrice = prompt('Enter price (MYR/hr):', room.price);
+    if (newPrice === null) return;
+    
+    const newDesc = prompt('Enter description:', room.desc);
+    if (newDesc === null) return;
+    
+    await sbClient.from('site_settings').upsert({ 
+        key: `room_${idx}`, 
+        value: JSON.stringify({ name: newName, price: parseInt(newPrice) || room.price, desc: newDesc })
+    }, { onConflict: 'key' });
+    
+    showToast('Room updated successfully!');
+    loadRooms();
+    loadBookings();
+}
+
+function openPriceModal(slot, name, price, desc) {
+    document.getElementById('price-slot').value = slot;
+    document.getElementById('price-name').value = name;
+    document.getElementById('price-value').value = price;
+    document.getElementById('price-desc').value = desc;
+    document.getElementById('priceModal').classList.add('active');
+}
+
+function closePriceModal() {
+    document.getElementById('priceModal').classList.remove('active');
+}
+
+async function savePrice() {
+    const slot = document.getElementById('price-slot').value;
+    const price = document.getElementById('price-value').value;
+    const desc = document.getElementById('price-desc').value;
+    const name = document.getElementById('price-name').value;
+    
+    const priceData = JSON.stringify({ price: parseInt(price), desc: desc });
+    
+    const { data: existing } = await sbClient.from('site_settings').select('*').eq('key', 'room_' + slot).single();
+    
+    if (existing) {
+        await sbClient.from('site_settings').update({ value: priceData }).eq('key', 'room_' + slot);
+    } else {
+        await sbClient.from('site_settings').insert({ key: 'room_' + slot, value: priceData });
+    }
+    
+    document.getElementById('room-price-' + slot).textContent = price;
+    closePriceModal();
+    showToast('Price updated!');
+}
+
+const imageSlots = [
+    { slot: 0, name: 'Hero Image', icon: 'fa-image' },
+    { slot: 1, name: 'Gallery 1', icon: 'fa-image' },
+    { slot: 2, name: 'Gallery 2', icon: 'fa-image' },
+    { slot: 3, name: 'Gallery 3', icon: 'fa-image' },
+    { slot: 4, name: 'Gallery 4', icon: 'fa-image' },
+    { slot: 5, name: 'Logo', icon: 'fa-gem' },
+    { slot: 6, name: 'Workstation 1', icon: 'fa-desktop' },
+    { slot: 7, name: 'Workstation 2', icon: 'fa-video' },
+    { slot: 8, name: 'Studio Space', icon: 'fa-camera' },
+    { slot: 9, name: 'Classroom', icon: 'fa-chalkboard' },
+    { slot: 10, name: 'Background', icon: 'fa-palette' },
+    { slot: 11, name: 'Feature 1', icon: 'fa-star' },
+    { slot: 12, name: 'Feature 2', icon: 'fa-shield' },
+    { slot: 13, name: 'Feature 3', icon: 'fa-bolt' },
+    { slot: 14, name: 'Footer Logo', icon: 'fa-gem' },
+    { slot: 15, name: 'Social Banner', icon: 'fa-share' }
+];
+
+const slots = imageSlots;
+
+async function loadImages() {
+    const { data, error } = await sbClient.from('site_images').select('*').order('slot', { ascending: true });
+    if (error) { console.error('Error loading images:', error); return; }
+    const images = data || [];
+    
+    let html = '';
+    slots.forEach(async (s, i) => {
+        const img = images.find(x => x.slot === i);
+        let fileSize = '';
+        if (img?.storage_path) {
+            try {
+                const { data: meta } = await sbClient.storage.from('studio-images').getMetadata(img.storage_path.split('/').pop());
+                if (meta?.size) {
+                    fileSize = formatBytes(meta.size);
+                }
+            } catch(e) { /* ignore */ }
+        }
+        html += `
+            <div class="card" style="display:flex;gap:16px;align-items:center;padding:16px;">
+                <div style="width:80px;height:80px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+                    ${img?.image_url ? '<img src="' + proxyImageUrl(img.image_url) + '" style="width:100%;height:100%;object-fit:cover;">' : '<i class="fas ' + s.icon + '" style="font-size:24px;color:var(--text-muted);"></i>'}
+                </div>
+                <div style="flex:1;">
+                    <div style="font-weight:600;margin-bottom:4px;">${s.name} ${fileSize ? '<span style="font-size:11px;color:var(--text-muted);margin-left:8px;">(' + fileSize + ')</span>' : ''}</div>
+                    <input type="text" id="img-url-${i}" value="${img?.image_url || ''}" placeholder="Paste image URL here..." style="width:100%;padding:10px;background:var(--primary);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;">
+                </div>
+                <label style="cursor:pointer;padding:10px 16px;background:var(--secondary);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;white-space:nowrap;">
+                    <i class="fas fa-upload"></i> Upload
+                    <input type="file" id="img-file-${i}" accept="image/*" style="display:none;" onchange="previewImage(${i}, this)">
+                </label>
+            </div>
+        `;
+    });
+    
+    document.getElementById('images-list').innerHTML = html;
+}
+
+function formatBytes(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(2) + ' MB';
+}
+
+function previewImage(slot, input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            let preview = document.querySelector(`#img-file-${slot}`).closest('.card').querySelector('div:first-child');
+            preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+async function saveAllImages() {
+    let saved = 0;
+    for (let i = 0; i < 16; i++) {
+        const fileInput = document.getElementById(`img-file-${i}`);
+        const urlInput = document.getElementById(`img-url-${i}`);
+        let imageUrl = urlInput?.value?.trim() || '';
+        
+        if (fileInput?.files?.length > 0) {
+            const file = fileInput.files[0];
+            const timestamp = Date.now();
+            const ext = file.name.split('.').pop();
+            const path = `site-images/${timestamp}-${i}.${ext}`;
+            
+            const { data, error } = await sbClient.storage.from('site-images').upload(path, file, { upsert: true });
+            
+            if (!error && data) {
+                const { data: urlData } = sbClient.storage.from('site-images').getPublicUrl(path);
+                imageUrl = urlData.publicUrl;
+            }
+        }
+        
+        if (imageUrl) {
+            const { data: existing } = await sbClient.from('site_images').select('*').eq('slot', i).single();
+            
+            if (existing) {
+                await sbClient.from('site_images').update({ image_url: imageUrl, storage_path: imageUrl.split('/').pop() }).eq('slot', i);
+            } else {
+                await sbClient.from('site_images').insert({ slot: i, image_url: imageUrl, slot_name: slots[i].name, storage_path: imageUrl.split('/').pop() });
+            }
+            saved++;
+        }
+    }
+    showToast(saved > 0 ? `${saved} images saved!` : 'No changes to save');
+    loadImages();
+}
+
+// Site Settings Functions
+async function loadSiteSettings() {
+    const { data } = await sbClient.from('site_settings').select('key, value');
+    if (data) {
+        data.forEach(item => {
+            if (item.key === 'site_title') {
+                document.getElementById('site-title').value = item.value || 'Leish Studio';
+            }
+        });
+    }
+}
+
+async function saveSiteSettings() {
+    const title = document.getElementById('site-title').value.trim();
+    const logoUrl = document.getElementById('img-url-5').value.trim();
+    
+    const { data: existingTitle } = await sbClient.from('site_settings').select('*').eq('key', 'site_title').single();
+    if (existingTitle) {
+        await sbClient.from('site_settings').update({ value: title }).eq('key', 'site_title');
+    } else {
+        await sbClient.from('site_settings').insert({ key: 'site_title', value: title });
+    }
+    
+    if (logoUrl) {
+        const { data: existingLogo } = await sbClient.from('site_images').select('*').eq('slot', 5).single();
+        if (existingLogo) {
+            await sbClient.from('site_images').update({ image_url: logoUrl, slot_name: 'Logo' }).eq('slot', 5);
+        } else {
+            await sbClient.from('site_images').insert({ slot: 5, image_url: logoUrl, slot_name: 'Logo' });
+        }
+    }
+    
+    showToast('Settings saved!');
+}
+
+// Render functions
+
+// Load images on page load
+
+// Site Settings Functions
+async function loadSiteSettings() {
+    const { data } = await sbClient.from('site_settings').select('key, value');
+    if (data) {
+        data.forEach(item => {
+            if (item.key === 'site_title') {
+                document.getElementById('site-title').value = item.value || 'Leish Studio';
+            }
+        });
+    }
+    
+    // Also load logo preview for slot 5
+    const { data: logoData } = await sbClient.from('site_images').select('image_url').eq('slot', 5).single();
+    if (logoData?.image_url) {
+        document.getElementById('preview-logo').innerHTML = '<img src="' + proxyImageUrl(logoData.image_url) + '" style="max-width:100%;max-height:100%;object-fit:contain;">';
+        document.getElementById('img-url-5').value = logoData.image_url;
+    }
+}
+
+async function saveSiteSettings() {
+    const title = document.getElementById('site-title').value.trim();
+    const logoUrl = document.getElementById('img-url-5').value.trim();
+    
+    // Save site title
+    const { data: existingTitle } = await sbClient.from('site_settings').select('*').eq('key', 'site_title').single();
+    if (existingTitle) {
+        await sbClient.from('site_settings').update({ value: title }).eq('key', 'site_title');
+    } else {
+        await sbClient.from('site_settings').insert({ key: 'site_title', value: title });
+    }
+    
+    // Save logo
+    const { data: existingLogo } = await sbClient.from('site_images').select('*').eq('slot', 5).single();
+    if (existingLogo) {
+        await sbClient.from('site_images').update({ image_url: logoUrl, slot_name: 'Logo' }).eq('slot', 5);
+    } else {
+        await sbClient.from('site_images').insert({ slot: 5, image_url: logoUrl, slot_name: 'Logo' });
+    }
+    
+    showToast('Header settings saved!');
+}
+
+// Render functions
+function renderBookingsTable() {
+    const search = document.getElementById('search-bookings').value.toLowerCase();
+    const status = document.getElementById('filter-status').value;
+    const payment = document.getElementById('filter-payment').value;
+    
+    let filtered = allBookings.filter(b => {
+        const matchSearch = !search || (b.client_name || '').toLowerCase().includes(search) || (b.client_email || '').toLowerCase().includes(search) || (b.id || '').includes(search);
+        const matchStatus = !status || b.status === status;
+        const matchPayment = !payment || b.payment_status === payment;
+        return matchSearch && matchStatus && matchPayment;
+    });
+    
+    if (filtered.length === 0) {
+        document.getElementById('bookings-tbody').innerHTML = '<tr><td colspan="8" class="empty">No bookings found</td></tr>';
+        return;
+    }
+    
+    document.getElementById('bookings-tbody').innerHTML = filtered.slice(0, 50).map(b => `
+        <tr>
+            <td>#${(b.id || '').slice(-6)}</td>
+            <td>${b.client_name || '-'}<br><small style="color:var(--text-muted)">${b.client_email || ''}</small></td>
+            <td>${b.room || '-'}</td>
+            <td>${b.booking_date || '-'}<br><small>${b.start_time || ''} - ${b.end_time || ''}</small></td>
+            <td>MYR ${b.total_amount || 0}</td>
+            <td><span class="badge ${b.status || 'pending'}">${b.status || 'pending'}</span></td>
+            <td><span class="badge ${b.payment_status === 'paid' ? 'paid' : 'unpaid'}">${b.payment_status || 'pending'}</span></td>
+            <td>
+                <button class="btn btn-secondary btn-sm" onclick="editBooking('${b.id}')"><i class="fas fa-edit"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderClients() {
+    const search = document.getElementById('search-clients').value.toLowerCase();
+    const filtered = allClients.filter(c => !search || (c.name || '').toLowerCase().includes(search) || (c.email || '').toLowerCase().includes(search));
+    document.getElementById('clients-tbody').innerHTML = filtered.map(c => `
+        <tr>
+            <td>${c.name || '-'}</td>
+            <td>${c.email || '-'}</td>
+            <td>${c.phone || '-'}</td>
+            <td>${c.booking_count || 0}</td>
+            <td>MYR ${c.total_spent || 0}</td>
+        </tr>
+    `).join('') || '<tr><td colspan="5" class="empty">No clients yet</td></tr>';
+}
+
+function renderTodaySchedule() {
+    const today = new Date().toISOString().split('T')[0];
+    const todayBookings = allBookings.filter(b => b.booking_date === today && b.status !== 'cancelled');
+    document.getElementById('today-schedule').innerHTML = todayBookings.length ? todayBookings.map(b => `
+        <div style="padding:12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <div><strong>${b.client_name}</strong><br><small>${b.room} • ${b.start_time}</small></div>
+            <span class="badge ${b.status}">${b.status}</span>
+        </div>
+    `).join('') : '<div class="empty">No bookings today</div>';
+}
+
+function renderRoomStats() {
+    const rooms = {};
+    allBookings.forEach(b => { rooms[b.room] = (rooms[b.room] || 0) + 1; });
+    document.getElementById('room-stats').innerHTML = Object.entries(rooms).map(([room, count]) => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
+            <span>${room}</span>
+            <strong>${count}</strong>
+        </div>
+    `).join('') || '<div class="empty">No data</div>';
+}
+
+function filterBookings() { renderBookingsTable(); }
+
+// Calendar
+function renderCalendar() {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    document.getElementById('cal-month').textContent = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date().toISOString().split('T')[0];
+    
+    let html = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => `<div class="cal-header">${d}</div>`).join('');
+    
+    for (let i = 0; i < firstDay; i++) html += '<div class="cal-cell other-month"></div>';
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const isToday = date === today;
+        const dayBookings = allBookings.filter(b => b.booking_date === date && b.status !== 'cancelled');
+        html += `
+            <div class="cal-cell ${isToday ? 'today' : ''}">
+                <strong>${day}</strong>
+                ${dayBookings.slice(0, 2).map(b => `<div class="cal-event">${b.client_name} - ${b.room}</div>`).join('')}
+                ${dayBookings.length > 2 ? `<div style="font-size:10px;color:var(--text-muted)">+${dayBookings.length-2} more</div>` : ''}
+            </div>
+        `;
+    }
+    document.getElementById('calendar-grid').innerHTML = html;
+}
+
+function prevMonth() { currentMonth.setMonth(currentMonth.getMonth() - 1); renderCalendar(); }
+function nextMonth() { currentMonth.setMonth(currentMonth.getMonth() + 1); renderCalendar(); }
+
+// Edit Booking
+function editBooking(id) {
+    const b = allBookings.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('edit-id').value = id;
+    document.getElementById('edit-status').value = b.status || 'pending';
+    document.getElementById('edit-payment').value = b.payment_status || 'pending';
+    document.getElementById('edit-notes').value = b.notes || '';
+    document.getElementById('editModal').classList.add('active');
+}
+
+async function saveBooking() {
+    const id = document.getElementById('edit-id').value;
+    const { error } = await sbClient.from('bookings').update({
+        status: document.getElementById('edit-status').value,
+        payment_status: document.getElementById('edit-payment').value,
+        notes: document.getElementById('edit-notes').value
+    }).eq('id', id);
+    
+    if (!error) {
+        closeModal();
+        loadBookings();
+        showToast('Booking updated');
+    }
+}
+
+function closeModal() { document.getElementById('editModal').classList.remove('active'); }
+
+function exportBookings() {
+    const csv = 'ID,Client,Room,Date,Amount,Status,Payment\n' + allBookings.map(b => 
+        `${b.id},${b.client_name},${b.room},${b.booking_date},${b.total_amount},${b.status},${b.payment_status}`
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'bookings.csv';
+    a.click();
+}
+
+function showToast(msg) {
+    const div = document.createElement('div');
+    div.className = 'toast success';
+    div.textContent = msg;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
+
+async function saveImage(slot, type) {
+    let url = '';
+    let prefix = '';
+    
+    switch(type) {
+        case 'hero': prefix = 'header'; break;
+        case 'gallery': prefix = 'gallery'; break;
+        case 'space': prefix = 'space'; break;
+        case 'footer': prefix = 'footer'; break;
+        case 'bg': prefix = 'bg'; break;
+        case 'favicon': prefix = 'favicon'; break;
+    }
+    
+    const fileInput = document.getElementById(prefix + '-file');
+    const urlInput = document.getElementById(prefix + '-url');
+    url = urlInput?.value?.trim() || '';
+    
+    if (fileInput?.files?.length > 0) {
+        const file = fileInput.files[0];
+        const timestamp = Date.now();
+        const ext = file.name.split('.').pop();
+        const path = `site-images/${slot}-${timestamp}.${ext}`;
+        
+        const { data, error } = await sbClient.storage.from('site-images').upload(path, file, { upsert: true });
+        
+        if (!error && data) {
+            const { data: urlData } = sbClient.storage.from('site-images').getPublicUrl(path);
+            url = urlData.publicUrl;
+        }
+    }
+    
+    if (url) {
+        const { data: existing } = await sbClient.from('site_images').select('*').eq('slot', slot).single();
+        
+        if (existing) {
+            await sbClient.from('site_images').update({ image_url: url }).eq('slot', slot);
+        } else {
+            await sbClient.from('site_images').insert({ slot: slot, image_url: url });
+        }
+        showToast('Image saved!');
+    } else {
+        showToast('No image to save');
+    }
+}
+
+async function saveHeader() {
+    const logoUrl = document.getElementById('header-logo-url')?.value?.trim() || '';
+    const title = document.getElementById('site-title')?.value?.trim() || '';
+    
+    if (logoUrl) {
+        const { data: existing } = await sbClient.from('site_images').select('*').eq('slot', 5).single();
+        if (existing) {
+            await sbClient.from('site_images').update({ image_url: logoUrl }).eq('slot', 5);
+        } else {
+            await sbClient.from('site_images').insert({ slot: 5, image_url: logoUrl, slot_name: 'Logo' });
+        }
+    }
+    
+    const { data: titleExisting } = await sbClient.from('site_settings').select('*').eq('key', 'site_title').single();
+    if (titleExisting) {
+        await sbClient.from('site_settings').update({ value: title }).eq('key', 'site_title');
+    } else {
+        await sbClient.from('site_settings').insert({ key: 'site_title', value: title });
+    }
+    
+    showToast('Header saved!');
+}
+
+// Check session
+const savedEmail = localStorage.getItem('adminEmail');
+if (savedEmail && VALID_ADMINS.includes(savedEmail)) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').classList.add('active');
+    document.getElementById('email').value = savedEmail;
+    loadAllData();
+}
+</script>
+</body>
+</html>

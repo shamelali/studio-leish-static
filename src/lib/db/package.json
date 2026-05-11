@@ -1,0 +1,19 @@
+{
+  "name": "@studio-leish/db",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "dependencies": {
+    "drizzle-orm": "^0.39.0",
+    "postgres": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.30.0",
+    "typescript": "^5.9.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "push": "drizzle-kit push"
+  }
+}

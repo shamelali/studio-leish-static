@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signing you in... | Studio Leish</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --surface: #0f0f1a;
+            --text: #eaeaea;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--surface);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--secondary);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        p { margin-top: 20px; color: var(--text); }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+    <p>Completing sign in...</p>
+
+    <script>
+        const supabaseUrl = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbW9pYnJxeXJ6dWVzbGFxdGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MTgyMjMsImV4cCI6MjA5MTM5NDIyM30.lKNoieYYCIU-cuHQk4W7dQvSqZdLfmb4I4QxfhNHuQk';
+        const supabaseLib = window.supabase || window.Supabase || window._supabase;
+        const supabase = supabaseLib ? supabaseLib.createClient(supabaseUrl, supabaseKey) : null;
+
+        function saveUserProfile(user) {
+            const profile = {
+                name: user.user_metadata?.name || user.email?.split('@')[0] || '',
+                email: user.email || '',
+                phone: user.user_metadata?.phone || ''
+            };
+            sessionStorage.setItem('userProfile', JSON.stringify(profile));
+        }
+
+        // Handle the OAuth callback
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                // Successfully signed in - store auth completion flag
+                sessionStorage.setItem('authCompleted', 'true');
+                if (session.user) saveUserProfile(session.user);
+ 
+                // Check if user has a pending booking
+                const pendingBooking = sessionStorage.getItem('pendingBooking');
+ 
+                if (pendingBooking) {
+                    // User was in the middle of booking - redirect to payment page
+                    sessionStorage.removeItem('pendingBooking');
+                    window.location.href = 'book.html?restored=true';
+                } else {
+                    // No booking in progress - redirect to landing page
+                    window.location.href = 'index.html';
+                }
+            }
+        });
+
+        // Fallback redirect if no session event fires
+        setTimeout(async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                sessionStorage.setItem('authCompleted', 'true');
+                if (session.user) saveUserProfile(session.user);
+ 
+                // Check if user has a pending booking
+                const pendingBooking = sessionStorage.getItem('pendingBooking');
+ 
+                if (pendingBooking) {
+                    // User was in the middle of booking - redirect to payment page
+                    sessionStorage.removeItem('pendingBooking');
+                    window.location.href = 'book.html?restored=true';
+                } else {
+                    // No booking in progress - redirect to landing page
+                    window.location.href = 'index.html';
+                }
+            } else {
+                window.location.href = '/user.html?error=auth_failed';
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
