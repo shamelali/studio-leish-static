@@ -1,0 +1,10 @@
+# Mailgun DNS Records for leish.my
+# Add the following DNS records at your domain registrar.
+# SPF record:
+#   v=spf1 include:mailgun.org ~all
+# DKIM record (TXT):
+#   mailgun._domainkey.leish.my  TXT  "k=rsa; p=PUBLIC_KEY"
+# MX records:
+#   mailgun.org.   10    mx.mailgun.org.
+#   mailgun.org.   10    mxa.mailgun.org.
+# Replace PUBLIC_KEY with the key provided by Mailgun.

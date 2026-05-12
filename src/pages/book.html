@@ -344,7 +344,7 @@
 <div class="container">
     <div class="header">
 <div class="logo" id="logo-home">
-    <div class="logo-icon"><img src="/assets/images/logo.png" style="width: 240px; height: 80px; object-fit: contain; border-radius: 0; background: transparent;"></div>
+    <div class="logo-icon"><img src="/public/assets/images/logo.png" style="width: 240px; height: 80px; object-fit: contain; border-radius: 0; background: transparent;"></div>
     <h1>L<span style="color: #e94560;">sh</span> Studio</h1>
 </div>
         <button class="back-btn" id="back-home-btn"><i class="fas fa-arrow-left"></i> Back to Home</button>
@@ -634,7 +634,7 @@
 <!-- Scripts at bottom -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
-<script>
+<script type="module">
 document.addEventListener('DOMContentLoaded', function() {
 // ─── Constants ───────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://kcmoibrqyrzueslaqtgc.supabase.co';
@@ -1037,7 +1037,7 @@ async function confirmBooking() {
     }
 
     try {
-        await fetch('https://api.resend.com/emails', {
+        await fetch('/api/send-email', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
